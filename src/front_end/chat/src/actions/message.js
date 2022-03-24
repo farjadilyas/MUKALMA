@@ -56,10 +56,7 @@ export const sendMessage = (
         // setResponses(responses)
         
         // Updating UI
-        console.log("here");
         hideTyping();
-        // console.log('second scrollToBottom');
-        // scrollToBottom();
         scrollToHighlight(messages.length);
         
     } catch (error) {
