@@ -3,19 +3,22 @@ import { makeStyles } from '@material-ui/core/styles'
 
 export default makeStyles((theme) => ({
     appBar: {
-        borderRadius: 15,
-        margin: '10px 0',
+        margin: '0',
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'column',
         width: '100%',
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '10px 50px',
+        [theme.breakpoints.up('sm')]: {
+            flexDirection: 'row',
+        },
     },
     heading: {
         color: 'rgba(0, 183, 255, 1)',
         textDecoration: 'none',
         userSelect: 'none',
+        display: 'flex',
     },
     image: {
         marginLeft: '15px',
@@ -37,6 +40,7 @@ export default makeStyles((theme) => ({
     brandContainer: {
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'space-between',
     },
     purple: {
         color: theme.palette.getContrastText(deepPurple[500]),
@@ -48,7 +52,17 @@ export default makeStyles((theme) => ({
         marginRight: '10px',
         margin: '0',
         position: 'relative',
-        left: '700px',
         userSelect: 'none',
-    }
+        display: 'flex',
+    }, 
+    grow: {
+        flexGrow: 1,
+    },
+    left: {
+        flexGrow: 1,
+        display: 'flex',
+    },
+    right: {
+        display: 'flex',
+    },
 }));

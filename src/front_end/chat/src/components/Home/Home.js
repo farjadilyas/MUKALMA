@@ -24,8 +24,8 @@ const Home = () => {
     const [spanSelected, setSpanSelected] = useState(/Fusce placerat consequat elementum./g)
 
     // Speech
-    const [speechText, setSpeechText] = useState('');
-    const [playAudio, setPlayAudio] = useState(false);
+    const [speechText, setSpeechText] = useState('Hello! I am Mukalma, An Intelligent Q and A Chatbot');
+    const [playAudio, setPlayAudio] = useState(true);
 
     // Source
     const dummySource = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec lacus in dolor porta dignissim vitae eget massa. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec pulvinar massa vitae metus elementum, a sagittis felis tempor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Ut vestibulum est ante, eget viverra nisl rutrum tempor. Cras vestibulum ac orci sed imperdiet. Donec cursus fringilla nibh, id pellentesque odio semper condimentum. Nullam id felis non augue ultrices luctus et imperdiet tellus. Pellentesque purus ex, maximus et feugiat ac, rhoncus non mauris. Curabitur porta purus id risus sollicitudin aliquam. Pellentesque at tincidunt velit. Sed fermentum eros in ultricies interdum. Donec vitae quam sed enim suscipit suscipit. Aliquam ligula elit, vehicula vitae nunc eu, varius accumsan ex. In sit amet eleifend massa.
@@ -56,7 +56,7 @@ const Home = () => {
     return (
         <div className={"mainContainer"} >
             <Grid container spacing={2}>
-                <Grid item xs={6}>
+                <Grid item xs={12} sm={6}>
                     <Chatbox 
                         messages={messages} 
                         setMessages={setMessages} 
@@ -65,7 +65,7 @@ const Home = () => {
                         setSpeechText={setSpeechText}
                     />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item xs={12} sm={6}>
                     <TabContainer 
                         source={source} 
                         setSource={setSource} 
@@ -79,7 +79,7 @@ const Home = () => {
                     />
                 </Grid>
             </Grid>
-            <div>
+            <div style={{ visibility: "hidden" }}>
                 <Speech
                     text={speechText}
                     voice="Google UK English Female"

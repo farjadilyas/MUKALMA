@@ -17,16 +17,18 @@ export default class Speech extends Component {
     this.stop = this.stop.bind(this);
     this.onend = this.onend.bind(this);
     this.onerror = this.onerror.bind(this);
+    this.mounted = false;
   }
 
   componentDidMount() {
     this.setButtonState('all', 'none', 'none', 'none');
+    this.mounted = true;
   }
 
   componentDidUpdate() {
     console.log("Update!");
     console.log("play_audio:", this.props.play_audio);
-    if (this.props.play_audio) {
+    if (this.props.play_audio && this.mounted) {
       this.play();
       this.props.setPlayAudio(false);
     }
@@ -54,6 +56,7 @@ export default class Speech extends Component {
   play() {
     console.log("Playing Audio");
     this.setSpeechSynthesis();
+    console.log("this.speechSynthesis:", this.speechSynthesis);
     this.speechSynthesis.speak();
     this.setButtonState('none', 'all', 'all', 'none');
   }
@@ -78,7 +81,8 @@ export default class Speech extends Component {
     this.stop();
   }
 
-  onerror() {
+  onerror(event) {
+    console.log("Error encountered!: error: ", event.error);
     this.stop();
   }
 

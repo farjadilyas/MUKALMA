@@ -135,3 +135,5 @@ dmypy.json
 # Jupyter Notebooks
 */.ipynb_checkpoints/*
 
+# React JS 
+src/front_end/chat/node_modules/

@@ -17,10 +17,8 @@ import './styles.css';
 
 // Scrolling to bottom function
 export const scrollToBottom = () => {
-    var chat = document.getElementById('end-of-chat');
-    if (chat) {
-        chat.scrollIntoView();
-    }
+    var endOfChat = document.getElementById('end-of-chat');
+    endOfChat.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
 }
 
 const Chatbox = ({ messages, setMessages, setSpanSelected, setResponses, setSpeechText }) => {
@@ -29,6 +27,13 @@ const Chatbox = ({ messages, setMessages, setSpanSelected, setResponses, setSpee
 
     // State
     const [message, setMessage] = useState('');
+
+    // Using a state for tracking width
+    const [width, setWidth] = useState(window.innerWidth)
+
+    window.addEventListener('resize', function(event) {
+        setWidth(window.innerWidth)
+    })
     
     // Microphone State
     const {
@@ -36,10 +41,6 @@ const Chatbox = ({ messages, setMessages, setSpanSelected, setResponses, setSpee
       listening
     } = useSpeechRecognition();
   
-    // if (!browserSupportsSpeechRecognition) {
-    //   return <span>Browser doesn't support speech recognition.</span>;
-    // }
-
     // When the transcript changes
     useEffect(() => {
         setMessage(transcript);
@@ -58,7 +59,8 @@ const Chatbox = ({ messages, setMessages, setSpanSelected, setResponses, setSpee
             setMessages, 
             setSpanSelected, 
             setResponses, 
-            setSpeechText
+            setSpeechText,
+            messages
         ));
     }
 
@@ -71,18 +73,16 @@ const Chatbox = ({ messages, setMessages, setSpanSelected, setResponses, setSpee
 
         onSubmitMessage(msg);
         setMessage('');
-        scrollToBottom();
     }
+
+    useEffect(() => {
+        scrollToBottom(messages.length);
+    }, [messages])
 
     // Toggle between listening states
     const toggleListening = () => {
         console.log("Listening Started")
         SpeechRecognition.startListening()
-        // if (listening) {
-        //     SpeechRecognition.stopListening()
-        // } else {
-        //     SpeechRecognition.startListening()
-        // }
     }
 
     // When listening stops
@@ -103,7 +103,7 @@ const Chatbox = ({ messages, setMessages, setSpanSelected, setResponses, setSpee
                 />
                 <div className='chat-box-bottom'>
                     <TypingIndicator />
-                    <div id="end-of-chat"/>
+                    <div id="end-of-chat" />
                 </div>
             </div>
             <div className='msg-footer'>

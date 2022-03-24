@@ -8,9 +8,14 @@ const Navbar = () => {
 
     // Building HTML
     return (
-        <AppBar className={classes.appBar} position='static' color="inherit">
-            <div className={classes.brandContainer}>
-                <Typography className={classes.heading} variant="h2" align="center">MUKALMA</Typography>
+        <AppBar className={classes.appBar} position='absolute' color="inherit">
+            <div className={classes.left}>
+                <Typography className={classes.heading} variant="h2" align="center">
+                    MUKALMA
+                </Typography>
+            </div>
+            <div className={classes.grow}/>
+            <div className={classes.right}>
                 <Typography variant="overline" display="block" gutterBottom className={classes.Members}>
                     {members}
                 </Typography>

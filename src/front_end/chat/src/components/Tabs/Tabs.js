@@ -34,7 +34,7 @@ const TabContainer = ({ source, setSource, spanSelected, topic, setTopic, topics
   }
 
   return (
-    <Box sx={{ maxWidth: 580, bgcolor: 'background.paper' }}>
+    <Box sx={{ maxWidth: 620, bgcolor: 'background.paper' }}>
       <Tabs
         value={value}
         onChange={handleChange}
@@ -45,7 +45,7 @@ const TabContainer = ({ source, setSource, spanSelected, topic, setTopic, topics
             <Tab label="Candidate Dialogue" />
             <Tab label="Topic Selection" />
       </Tabs>
-      <Box sx={{width: 480}}>
+      <Box sx={{ maxWidth: 620, minHeight: 450 }}>
             {componentSelect(value)}
       </Box>
     </Box>

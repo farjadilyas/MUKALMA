@@ -7,6 +7,8 @@ import Select from '@mui/material/Select';
 import CircularProgress from '@mui/material/CircularProgress';
 import { topicSelect } from '../../actions/message';
 import SearchBar from "material-ui-search-bar";
+import Chip from '@mui/material/Chip';
+import { Grid } from "@material-ui/core";
 
 const Topic = ({ topic, setTopic, topics, setTopics, setSource, setMessages }) => {
     // Dispatcher
@@ -32,29 +34,47 @@ const Topic = ({ topic, setTopic, topics, setTopics, setSource, setMessages }) =
     // Building HTML
     return (
         <div className="container">
-          <InputLabel id="topicSelect" className="inputLabel">Select a topic of conversation from our collection</InputLabel>
-          <Select
-            labelId="topicSelect"
-            id="demo-simple-select-helper"
-            value={topic}
-            label="Topic"
-            onChange={handleChange}
-            className="selector">
-            {
-              topics.map(topic => {
-                return topic !== "Custom" ? <MenuItem value={topic}>{topic}</MenuItem> : null
-            })}
-          </Select>
-          <InputLabel 
-            id="topicSearch" 
-            className="topicSearch">
-              Or search for any topic
-          </InputLabel>
-          <SearchBar 
-            value={search} 
-            className="searchBar" 
-            onChange={(newValue) => setSearch(newValue)} onRequestSearch={onSearch}/>
-          <CircularProgress className="progress" style={{ visibility: progress }}/>
+          <div className='inputGroup'>
+            <InputLabel>
+              Current Topic Tags
+            </InputLabel>
+            <Grid container spacing={1}>
+              {['Multan', 'Multan Qalanders', 'Punjab', 'Chenab River'].map((tag, index) => (
+                <Grid item xs={12} sm={6} md={4}>
+                  <Chip label={tag} variant="outlined" />
+                </Grid>
+              ))}
+            </Grid>
+          </div>
+          <div className='inputGroup'>
+            <InputLabel id="topicSelect">
+              Select a topic of conversation from our collection
+            </InputLabel>
+            <Select
+              labelId="topicSelect"
+              id="demo-simple-select-helper"
+              value={topic}
+              label="Topic"
+              onChange={handleChange}
+              className="selector"
+            >
+              {topics.map(topic => {
+                  return topic !== "Custom" ? <MenuItem value={topic}>{topic}</MenuItem> : null
+              })}
+            </Select>
+          </div>
+          <div className='inputGroup'>
+            <InputLabel 
+              id="topicSearch" 
+              className="inputLabel">
+                Or search for any topic
+            </InputLabel>
+            <SearchBar 
+              value={search} 
+              className="searchBar" 
+              onChange={(newValue) => setSearch(newValue)} onRequestSearch={onSearch}/>
+            <CircularProgress className="progress" style={{ visibility: progress }}/>
+          </div>
       </div>
     )
 }

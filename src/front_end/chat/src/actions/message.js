@@ -10,7 +10,8 @@ export const sendMessage = (
         setMessages, 
         setSpanSelected, 
         setResponses, 
-        setSpeechText, 
+        setSpeechText,
+        messages, 
     ) => async () => {
     try {
 
@@ -55,9 +56,11 @@ export const sendMessage = (
         // setResponses(responses)
         
         // Updating UI
+        console.log("here");
         hideTyping();
-        scrollToHighlight();
-        scrollToBottom();
+        // console.log('second scrollToBottom');
+        // scrollToBottom();
+        scrollToHighlight(messages.length);
         
     } catch (error) {
         console.log(error)
