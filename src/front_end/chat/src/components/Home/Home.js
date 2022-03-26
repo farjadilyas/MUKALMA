@@ -22,6 +22,7 @@ const Home = () => {
     const [topic, setTopic] = useState('');
     const [topics, setTopics] = useState([]);
     const [spanSelected, setSpanSelected] = useState(/Fusce placerat consequat elementum./g)
+    const [selectedTopic, setSelectedTopic] = useState('Multan')
 
     // Speech
     const [speechText, setSpeechText] = useState('Hello! I am Mukalma, An Intelligent Q and A Chatbot');
@@ -76,6 +77,7 @@ const Home = () => {
                         setTopics={setTopics}
                         setMessages={setMessages}
                         responses={responses}
+                        selectedTopic={selectedTopic}
                     />
                 </Grid>
             </Grid>

@@ -190,23 +190,6 @@
   max-width: 400px;
 }
 
-.chat-bubble::before {
-  width: 20px;
-}
-
-.chat-bubble::after {
-  width: 26px;
-  background-color: red;
-}
-
-.chat-bubble::before
-.chat-bubble::after {
-  position: absolute;
-  bottom: 0;
-  height: 25px;
-  content: '';
-}
-
 .is-user {
   background-color: #2285ff;
   -webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
@@ -215,14 +198,16 @@
 }
 
 .is-user::before {
-  right: -7px;
-  background-color: #2285ff;
-  border-bottom-left-radius: 16px 14px;
-}
-
-.is-user:after {
-  right: -26px;
-  border-bottom-left-radius: 10px;
+  content: "";
+  width: 0px;
+  height: 0px;
+  position: absolute;
+  border-left: 10px solid #2285ff;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #2285ff;
+  border-bottom: 10px solid transparent;
+  right: -6px;
+  top: 2px;
 }
 
 .is-other {
@@ -233,13 +218,16 @@
 }
 
 .is-other::before {
-  left: -7px;
-  border-bottom-right-radius: 16px 14px;
-}
-
-.is-other::after {
-  left: -26px;
-  border-bottom-right-radius: 10px;
+  content: "";
+  width: 0px;
+  height: 0px;
+  position: absolute;
+  border-left: 10px solid transparent;
+  border-right: 10px solid #f1f0f0;;
+  border-top: 10px solid #f1f0f0;;
+  border-bottom: 10px solid transparent;
+  left: -12px;
+  top: 6px;
 }
 
 .timestamp {
