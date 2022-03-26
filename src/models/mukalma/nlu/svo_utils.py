@@ -388,3 +388,6 @@ def extract_named_entities(message, ner_list):
     return [ner.text for ner in processed_doc.ents if ner.label_ in ner_list]
 
 # End of function
+
+def sent_tokenize_text(text):
+    return [sent.text for sent in nlp(text).sents]

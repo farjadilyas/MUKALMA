@@ -4,7 +4,7 @@
 
   MUKALMA Class
     - Primary pipeline class for MUKALMA, as developed in Iteration 1 and 2 of the project
-    - Defines a model that makes use of ann ensemble Knowledge-Retrieval module
+    - Defines a model that makes use of an ensemble Knowledge-Retrieval module
     - In conjunction with a Language Model for dialog generation.
     - This model should be used for generating human-like dialog grounded on knowledge.
 """
@@ -16,31 +16,23 @@ from ...util_models.MpNet import MpNet
 from ...util_models.T5.T5ForQuestionGeneration import T5ForQuestionGeneration
 
 # Importing NLU Components
-from .nlu.partsOfSpeech import get_nouns, match_questions, match_nouns_from_set, truecasing_by_pos, fix_sentence
-from .nlu.svo_utils import nlp
+from .nlu.partsOfSpeech import get_pos_with_types, get_nouns, match_questions, truecasing_by_pos, fix_sentence
 from .nlu.intentRecognition import IntentRecognizer
+
+from .KnowledgeSource import KnowledgeSource
 
 from torch import cuda
 
 
-# Class Definition
 class MUKALMA:
     def __init__(self, params):
-        """
-        function to initialize the model pipeline
-        :param knowledge_source: a python str of raw text that contains the knowledge source on which the model attends
-                                 over
-        """
         self.TAG = 'MUKALMA'
 
         # Check for Nvidia CUDA Support on the machine
         cuda.empty_cache()
         print(f"{self.TAG}: CUDA GPU is {'not' if not cuda.is_available() else ''} available on this machine")
 
-        # ---------- Setting up the Knowledge Source
-        self.secondary_knowledge_dict = {}
-        self.current_turn_knowledge = ""
-        self.set_knowledge_source(params["source"])
+        self.knowledge_db = KnowledgeSource()
 
         # Parameter Configurations
         self.flavor_selected = params["selected_flavor"]
@@ -48,80 +40,45 @@ class MUKALMA:
         self.model_flavors = params["flavors"]
         self.cuda_use = params["use_cuda"]
 
-        # ---------- Initialize all sub-models used by this model
-
+        self.sentence_model = MpNet(self.flavor_config["mpnet"], use_cuda=self.cuda_use["mpnet"])
+        
         self.intentRecognizer = IntentRecognizer(model_path=self.flavor_config["intent"])
 
         self.dialogue_model = DialoGPTController(self.flavor_config["dialoGPT"], use_cuda=self.cuda_use["dialoGPT"])
         self.dialogue_model.initialize_model(refresh=True)
 
-        self.sentence_model = MpNet(self.flavor_config["mpnet"], use_cuda=self.cuda_use["mpnet"])
-
-        self.question_generation_model = T5ForQuestionGeneration(self.flavor_config["t5-e2e"], use_cuda=self.cuda_use["t5-e2e"])
+        self.question_generation_model = T5ForQuestionGeneration(self.flavor_config["t5-e2e"],
+                                                                 use_cuda=self.cuda_use["t5-e2e"])
         self.question_generation_model.initialize_model()
 
         self.cloze_model = T5ClozeController(self.flavor_config["t5"], use_cuda=self.cuda_use["t5"], num_responses=3)
         self.cloze_model.initialize_model()
 
-        # Initializing Total nouns and verbs in the text
-        self.knowledge_source_pos = set()
-    # End of function
-
-    def load_knowledge_source_pos(self, knowledge_source):
-        self.knowledge_source_pos = set(get_nouns(knowledge_source))
+        # Keeps track of the topic that is currently being talked about
+        self.topic_str = ""
 
     def set_knowledge_source(self, knowledge_source):
-        self.knowledge_source = knowledge_source
-        self.sent_tok_knowledge = [sent.text for sent in nlp(knowledge_source).sents]
+        pass
 
-        # Loading POS entities
-        self.load_knowledge_source_pos(knowledge_source)
+    def __extract_topic(self, message):
+        pos_list = get_pos_with_types(message)
+        pos_words = []
+        prev_type = None
+        for pos in pos_list:
+            # If the current part of speech isn't a Noun, reset the previous type and skip this
+            if pos[1][:2] not in ['NN', 'CD']:
+                prev_type = None
+                continue
 
-    def __set_combined_knowledge_source_for_turn(self):
-        # self.knowledge_model.setKnowledgeSource(self.current_turn_knowledge)
-        self.sent_tok_knowledge = [sent.text for sent in nlp(self.current_turn_knowledge).sents]
-
-        # Loading POS entities
-        if len(self.current_turn_knowledge) != 0:
-            self.load_knowledge_source_pos(self.current_turn_knowledge)
-
-    def fetch_secondary_knowledge(self, message):
-        # Reset the combined knowledge source for this turn
-        self.current_turn_knowledge = ""
-
-        # Uncomment the below code to allow for Wikipedia looking up during the conversation
-        # This allows the conversation agent to move from one topic to another
-        """
-        # Extract the named entities from the message sent by the user
-        # Attempt to find a wikipedia article corresponding to each named entity and extract a summary
-        # Append these summaries to the knowledge source in order to make the information available to our model
-        named_entities = extract_named_entities(message, get_non_numeric_named_entities())
-        for named_entity in named_entities:
-            print(f"[{self.TAG}]: [fetch_secondary_knowledge]: Fetching knowledge for {named_entity}")
-            if named_entity not in self.secondary_knowledge_dict:
-                topic_summary = getTopicSummary(named_entity)
-                if topic_summary is not None:
-                    self.secondary_knowledge_dict[named_entity] = topic_summary
-                    self.current_turn_knowledge += topic_summary
-                else:
-                    print(f"[{self.TAG}]: [fetch_secondary_knowledge]: Could not find knowledge for {named_entity}")
+            # If the current pos is relevant, process it
+            # If the previous pos had the same type, it might be a compound word, append it
+            # If not, just append it to the list of relevant pos words
+            if pos[1] == prev_type:
+                pos_words[-1] = f"{pos_words[-1]} {pos[0]}"
             else:
-                self.current_turn_knowledge += self.secondary_knowledge_dict[named_entity]
+                pos_words.append(pos[0])
 
-        # Append the primary knowledge to the end
-        # If any named entities were found, they should be more relevant than the primary knowledge and should be closer
-        # to the beginning of the text
-        # self.current_turn_knowledge += self.knowledge_source
-        """
-
-        # FOR DEBUGGING PURPOSES START
-        # Comment this line if you don't want to change topic: by Nabeel Danish
-        self.current_turn_knowledge = self.knowledge_source
-        # FOR DEBUGGING PURPOSES END
-
-        print(f"[{self.TAG}]: {self.current_turn_knowledge}\n")
-
-    # End of function
+        return pos_words
 
     def get_best_response_id(self, responses, log_responses=False, prefix=""):
         max_length = -1
@@ -134,9 +91,8 @@ class MUKALMA:
                 max_id = response_id
 
         return max_id
-    # End of function
 
-    def generate_knowledge_based_response(self, message, knowledge_sent, extracted_question):
+    def generate_knowledge_based_response(self, message, knowledge_sent, extracted_question=""):
         message = fix_sentence(message)
 
         # If a relevant knowledge sentence couldn't be found, return the best response the dialogue model could generate
@@ -177,9 +133,11 @@ class MUKALMA:
 
         # Check if the answer generated by the dialog model 'follows from' the generated knowledge-grounded output
         # at index 0 of the fragmented response
+        """
         self.cloze_model.check_equivalence(
             best_fragmented_response[1], f"{self.knowledge_source}. {extracted_question} {best_fragmented_response[0]}"
         )
+        """
 
         # Swap the best response to index 0 to indicate that this was the selected response
         outputs[best_response_id] = outputs[0]
@@ -188,13 +146,15 @@ class MUKALMA:
         return best_response, outputs
     # End of function
 
-    def find_relevant_response(self, message):
+    def find_relevant_response(self, message, cur_turn_knowledge, cur_turn_knowledge_tok):
         selected_question = message
 
         # Matching Nouns
+        """
         if match_nouns_from_set(message, self.knowledge_source_pos) == 0:
             return selected_question, "", -1, -1
-
+        """
+        
         # Intent Recognition
         intent = self.intentRecognizer.recognizeIntent(message)
         print(f"[{self.TAG}]: Intent: {intent}")
@@ -213,17 +173,20 @@ class MUKALMA:
             print(f"[{self.TAG}]: [Message-Question]: {knowledge_question}")
             selected_question = knowledge_question
             knowledge_sent, knowledge_start_index, knowledge_end_index = \
-                self.cloze_model.get_answers(message, self.current_turn_knowledge)
+                self.cloze_model.get_answers(message, cur_turn_knowledge)
             print(f"[{self.TAG}]: [CLOZE-Based]: Knowledge sent: {knowledge_sent}")
 
         # If a knowledge_sent couldn't be found, find the most similar sentence instead
         if len(knowledge_sent) == 0:
-            print(f"[{self.TAG}]: SENT TOK KNOWLEDGE: { self.sent_tok_knowledge }")
-            print(f"\n\nSENT TOK KNOWLEDGE:\n{self.sent_tok_knowledge[:4]}\n\nmessage:\n{message}")
-            knowledge_sent, knowledge_start_index, knowledge_end_index = \
-                self.sentence_model.get_most_similar_sentence(message, self.sent_tok_knowledge), -1, -1
+            print(f"[{self.TAG}]: SENT TOK KNOWLEDGE: { cur_turn_knowledge_tok }")
+            print(f"\n\nSENT TOK KNOWLEDGE:\n{cur_turn_knowledge_tok[:4]}\n\nmessage:\n{message}")
+            knowledge_sents, knowledge_start_index, knowledge_end_index = \
+                self.sentence_model.get_most_similar_sentence(message, cur_turn_knowledge_tok), -1, -1
 
-            if len(knowledge_sent) != 0:
+            if len(knowledge_sents) != 0:
+                # Pick the best matched sentence
+                # TODO: An additional layer of scoring can be added before selecting from the set of best matched sentences
+                knowledge_sent = knowledge_sents[0]
                 # Generate a question from the message and the similar sentence
                 knowledge_questions = []
                 message_nouns = get_nouns(message)
@@ -260,16 +223,28 @@ class MUKALMA:
         return selected_question, knowledge_sent, knowledge_start_index, knowledge_end_index
 
     def get_response(self, message):
-        self.fetch_secondary_knowledge(message)
-        self.__set_combined_knowledge_source_for_turn()
+        # Get a list of topics that may have been mentioned in the message
+        topics = self.__extract_topic(message)
+
+        print(f"TOPIC SEARCH STRING: {topics}")
+
+        # If the message talks about a new topic...
+        # Request Knowledge DB to fetch data relevant to the current message, update the db
+        # and finally, return the most relevant document for this message
+        cur_turn_knowledge, cur_turn_knowledge_tok = "", []
+        if len(topics) != "":
+            cur_turn_knowledge_tok = self.knowledge_db.fetch_topic_data(topics, message)
+            cur_turn_knowledge = ' '.join(cur_turn_knowledge_tok)
 
         # Retrieve the relevant knowledge sentence from the knowledge source
-        selected_question, knowledge_sent, knowledge_start_index, knowledge_end_index = self.find_relevant_response(
-            message)
+        selected_question, knowledge_sent, knowledge_start_index, knowledge_end_index = "", "", 0, 0
+        if len(cur_turn_knowledge_tok) != 0:
+            selected_question, knowledge_sent, knowledge_start_index, knowledge_end_index = self.find_relevant_response(
+                message, cur_turn_knowledge, cur_turn_knowledge_tok)
 
         # Condition on the knowledge sentence, and generate knowledge-grounded dialog
         best_response, knowledge_grounded_responses = \
-            self.generate_knowledge_based_response(message, knowledge_sent, selected_question)
+            self.generate_knowledge_based_response(message, knowledge_sent)
 
         # Cleaning the responses
         best_response = truecasing_by_pos(best_response)
@@ -277,9 +252,7 @@ class MUKALMA:
             knowledge_grounded_responses[i] = truecasing_by_pos(knowledge_grounded_responses[i])
 
         # Logging and Return
-        print(f"[{self.TAG}]: GENERATED RESPONSE: { knowledge_grounded_responses }")
-        return { "knowledge_sent": knowledge_sent,
-                 "response": best_response, "candidates": knowledge_grounded_responses,
-                "k_start_index": knowledge_start_index, "k_end_index": knowledge_end_index }
-    # End of function
-# End of class
+        print(f"[{self.TAG}]: GENERATED RESPONSE: {knowledge_grounded_responses}")
+        return {"knowledge_sent": knowledge_sent,
+                "response": best_response, "candidates": knowledge_grounded_responses,
+                "k_start_index": knowledge_start_index, "k_end_index": knowledge_end_index}

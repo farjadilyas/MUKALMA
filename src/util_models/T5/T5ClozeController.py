@@ -141,6 +141,8 @@ class T5ClozeController:
             print(f"[{self.TAG}]: [get_answers: QA]: {decoded_output}")
             decoded_outputs.append(decoded_output)
 
+        # TODO: Implement better entailment checking
+        """
         # decoded_outputs[0] = "Mumbai"
         inp = f"mnli hypothesis: {decoded_outputs[0]} . premise: {knowledge_source} {message}"
 
@@ -152,5 +154,7 @@ class T5ClozeController:
             eq_check = self.tokenizer.decode(eq_output, skip_special_tokens=True)
             eq_checks.append(eq_check)
             print(f"[{self.TAG}]: [get_answers: sanity_check]: {eq_check}")
-
-        return decoded_outputs[0] if eq_checks[0] == 'entailment' else "", -1, -1
+        
+        # if eq_checks[0] == 'entailment' else ""
+        """
+        return decoded_outputs[0], -1, -1
