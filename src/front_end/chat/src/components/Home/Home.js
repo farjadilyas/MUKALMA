@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
+
 import { useDispatch } from 'react-redux'
 import { Grid } from "@material-ui/core";
-import Speech from './Speech/Speech'
+import { motion } from 'framer-motion';
 
+import Speech from './Speech/Speech';
 import Chatbox from "../Chatbox/Chatbox";
 import TabContainer from "../Tabs/Tabs";
+
 import { initialState } from "../Chatbox/state";
 import { fetchSource, fetchTopics } from "../../actions/message";
 
@@ -67,18 +70,22 @@ const Home = () => {
                     />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                    <TabContainer 
-                        source={source} 
-                        setSource={setSource} 
-                        spanSelected={spanSelected}
-                        topic={topic}
-                        setTopic={setTopic}
-                        topics={topics}
-                        setTopics={setTopics}
-                        setMessages={setMessages}
-                        responses={responses}
-                        selectedTopic={selectedTopic}
-                    />
+                    <motion.div
+                        animate={{ x: [30, 0], opacity: [0, 1] }}
+                    >
+                        <TabContainer 
+                            source={source} 
+                            setSource={setSource} 
+                            spanSelected={spanSelected}
+                            topic={topic}
+                            setTopic={setTopic}
+                            topics={topics}
+                            setTopics={setTopics}
+                            setMessages={setMessages}
+                            responses={responses}
+                            selectedTopic={selectedTopic}
+                        />
+                    </motion.div>
                 </Grid>
             </Grid>
             <div style={{ visibility: "hidden" }}>

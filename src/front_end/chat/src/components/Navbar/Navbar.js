@@ -1,5 +1,6 @@
 import { AppBar, Typography } from "@material-ui/core";
 import useStyles from './styles'
+import { motion } from 'framer-motion'
 
 const Navbar = () => {
     const classes = useStyles();
@@ -10,15 +11,23 @@ const Navbar = () => {
     return (
         <AppBar className={classes.appBar} position='absolute' color="inherit">
             <div className={classes.left}>
-                <Typography className={classes.heading} variant="h2" align="center">
-                    MUKALMA
-                </Typography>
+                <motion.div
+                    animate={{ x: [-30, 0], opacity: [0, 1] }}
+                >
+                    <Typography className={classes.heading} variant="h2" align="center">
+                        MUKALMA
+                    </Typography>
+                </motion.div>
             </div>
             <div className={classes.grow}/>
             <div className={classes.right}>
-                <Typography variant="overline" display="block" gutterBottom className={classes.Members}>
-                    {members}
-                </Typography>
+                <motion.div
+                    animate={{ x: [30, 0], opacity: [0, 1] }}
+                >
+                    <Typography variant="overline" display="block" gutterBottom className={classes.Members}>
+                        {members}
+                    </Typography>
+                </motion.div>
             </div>
         </AppBar>
     )

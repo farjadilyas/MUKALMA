@@ -1,8 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import MDSpinner from 'react-md-spinner';
 import { motion, AnimatePresence } from 'framer-motion'
 
 const MessageList = ({ messages, isLoading, user }) => {
+
+    // State variable for animation changing
+    const [yValue, setYValue] = useState(0);
 
     // Motion preset
     const transition = {
@@ -15,7 +18,7 @@ const MessageList = ({ messages, isLoading, user }) => {
     const variants = {
         initial: {
           opacity: 0,
-          y: 300,
+          y: yValue,
         },
         enter: {
           opacity: 1,
@@ -23,6 +26,11 @@ const MessageList = ({ messages, isLoading, user }) => {
           transition,
         },
     }
+
+    // Using mount effect to change animation Y
+    useEffect(() => {
+        setYValue(300);
+    }, [])
     
     // Using a state for tracking width
     const [width, setWidth] = useState(window.innerWidth)

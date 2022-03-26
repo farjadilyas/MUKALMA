@@ -1,3 +1,5 @@
+import { images } from '../../constants'
+
 // Sender
 export const sender = {
     "name": "Ironman",
@@ -8,7 +10,7 @@ export const sender = {
 export const agent = {
     "name": "MUKALMA",
     "uid": "user2",
-    "avatar": "https://drive.google.com/uc?export=view&id=111CrMZERxf6HxLR4X5WYmKapKSzLqC-S"
+    "avatar": images.splashLogo
 }
 
 // Storing Messages
