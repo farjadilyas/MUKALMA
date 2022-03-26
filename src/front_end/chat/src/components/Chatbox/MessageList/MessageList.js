@@ -47,13 +47,36 @@ const MessageList = ({ messages, isLoading, user }) => {
         </div>
     );
 
+    // keeping a counter for the last message's user
+    var last_user = null
+    var first_message = true 
+    var last_message = true
+    
+    // Only build if we are not loading and have messages in the list
     if (!isLoading && messages.length) return (
+
         // Mapping each message into a bubble
         chatContent = messages.map((message, index) => {
+            // Getting the next element
+            var nextMessage = messages[index + 1]
+            
+            // We use a flag to see if we have to bulk messages together
+            var bulkTogether = !first_message && last_user === message.sender.uid;
+            
+            // Changing the flags if the user changes
+            if (last_user != message.sender.uid) {
+                first_message = true;
+                last_user = message.sender.uid;
+            }   
+
+            if ((nextMessage && message.sender.uid != nextMessage.sender.uid) || !nextMessage) {
+                last_message = true;
+            }
+
             // Depending on the user, we display the sender's name component
             var isUser = user.uid === message.sender.uid;
             var renderName = void 0;
-            if (isUser) {
+            if (isUser || bulkTogether) {
                 renderName = (<></>);
             } else {
                 renderName = (
@@ -62,7 +85,7 @@ const MessageList = ({ messages, isLoading, user }) => {
             }
 
             // Building the complete Message layout
-            return (
+            const layout = (
                 <motion.li
                     key={message.id}
                     initial="initial"
@@ -71,10 +94,13 @@ const MessageList = ({ messages, isLoading, user }) => {
                     layout
                     id={`message-bubble-${index}`} 
                     className="chat-bubble-row"
-                    style={{ flexDirection: isUser ? 'row-reverse' : 'row' }}
+                    style={{ 
+                        flexDirection: isUser ? 'row-reverse' : 'row',
+                        padding: bulkTogether || first_message? '6px 20px 0px 20px' : '15px 20px 15px 20px'
+                    }}
                 >
                     <div>  
-                        {!isUser && width > 600 ? (
+                        {!isUser && width > 600 && !bulkTogether ? (
                             <img 
                                 src={message.sender.avatar}
                                 alt="sender avatar"
@@ -82,11 +108,15 @@ const MessageList = ({ messages, isLoading, user }) => {
                                 style={ isUser ? { marginLeft: '15px' } : { marginRight: '5px' }} 
                             />
                         ) : ''}
-                        <div className={'chat-bubble ' + (isUser ? 'is-user' : 'is-other')}>
+                        <div 
+                            className={'chat-bubble ' + (isUser ? 'is-user' : 'is-other') + (first_message ? '' : ' no-tail')}
+                            style={{ padding: bulkTogether || first_message? '10px 20px 8px 20px' : '10px 20px 1px 20px' }}
+                        >
                             {renderName}
                             <div className='message' style={{ color: isUser ? '#FFF' : '#2D313F' }}>
                                 {message.text}
                             </div>
+                            { last_message ? 
                             <div>
                                 <p 
                                     className='timestamp' 
@@ -94,11 +124,18 @@ const MessageList = ({ messages, isLoading, user }) => {
                                 >
                                     {new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}
                                 </p>
-                            </div>
+                            </div> : ''
+                            }
                         </div>
                     </div>
                 </motion.li>
             );
+
+
+            // Before returning layout, we reset the first message flag
+            first_message = false
+            last_message = false
+            return layout
         })
     );
 }

@@ -230,6 +230,10 @@
   top: 6px;
 }
 
+.no-tail::before {
+  opacity: 0;
+}
+
 .timestamp {
   font-size: 8px;
   text-align: right;
