@@ -253,3 +253,29 @@ p {
     font-size: 12px;
   }
 }
+
+.pulse-ring {
+  content: '';
+  width: 30px;
+  height: 30px;
+	background: gainsboro;
+  border: 3px solid gray;
+  border-radius: 50%;
+  position: absolute;
+  animation: pulsate infinite 1.5s;
+}
+
+.mic-icon {
+  z-index: 1;
+}
+
+@keyframes pulsate {
+  0% {
+    -webkit-transform: scale(1, 1);
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: scale(1.3, 1.3);
+    opacity: 0;
+  }
+}
