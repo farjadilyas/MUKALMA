@@ -45,7 +45,7 @@ class MpNet:
             console.log(f"""[{self.TAG}]: Loading {model_path}...\n""")
             self.model = SentenceTransformer(model_path, device=self.device)
 
-    def get_most_similar_sentence(self, sentence, candidates):
+    def get_most_similar_sentence(self, sentence, candidates, num_responses=5):
         sentences = [sentence]
         sentences.extend(candidates)
 
@@ -59,6 +59,9 @@ class MpNet:
         # Compute softmax over the similarity scores for all candidates and pick the best option
         # Softmax is used to obtain a relative score for the best candidate that will work better with a threshold
         scores_softmax = softmax(scores)
+
+        # Traverse over -1*list sorted in ascending order since we want the most similar elements at the smallest indexes
+        most_similar_sentences = [candidates[index] for index in (-scores_softmax).argsort()[:num_responses]]
         best_candidate_id = scores_softmax.argmax()
         max_score = scores_softmax[best_candidate_id]
         most_similar_sentence = candidates[best_candidate_id]
@@ -66,8 +69,8 @@ class MpNet:
         print(f"[{self.TAG}]: get_most_similar_sentence: max score: {max_score}, num_candidates: {len(candidates)},\n" +
               f"score_dist: {scores_softmax}")
 
-        print(f"[{self.TAG}]: returning: {most_similar_sentence}")
-        return most_similar_sentence
+        print(f"[{self.TAG}]: returning: {most_similar_sentence}, and {num_responses-1} other similar sentences")
+        return most_similar_sentences
 
     # End of function
 # End of class

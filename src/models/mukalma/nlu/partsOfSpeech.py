@@ -64,7 +64,8 @@ def get_verb_pos_list():
 
 # Function to get a set of pos entities
 # from the given raw_text
-def get_pos(raw_text, pos_list):
+def get_pos(raw_text, pos_list=None):
+    print(raw_text)
     tokenized = sent_tokenize(raw_text)
     nouns = []
 
@@ -74,7 +75,7 @@ def get_pos(raw_text, pos_list):
 
         # Looping over the sentence tokens
         for tag in tagged:
-            if tag[1] in pos_list:
+            if pos_list is None or tag[1] in pos_list:
                 nouns.append(tag[0])
             # End if
         # End for
@@ -82,6 +83,15 @@ def get_pos(raw_text, pos_list):
 
     return nouns
 # End of function
+
+def get_pos_with_types(raw_text):
+    tokenized = sent_tokenize(raw_text)
+
+    pos = []
+    for sentence in tokenized:
+        tagged = tag_sentence(sentence)
+        pos.extend(tagged)
+    return pos
 
 def match_words(word1, word2):
     t1 = singularize(word1.lower())
