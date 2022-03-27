@@ -21,7 +21,7 @@ class APIModel:
                     "dialoGPT": "../../../models/DialoGPT-small",
                     "t5": "../../../models/t5-small",
                     "bert": "../../../models/bert-base-cased-squad2",
-                    "mpnet": "../../../models/all-mpnet-base-v2",
+                    "miniLM": "../../../models/all-MiniLM-L6-v2",
                     "t5-e2e": "../../../models/t5-small-e2e-qg",
                     "intent": "../../../models/intent.sav",
                 },
@@ -29,7 +29,7 @@ class APIModel:
                     "dialoGPT": "../../../models/DialoGPT-medium",
                     "t5": "../../../models/t5-base",
                     "bert": "../../../models/bert-base-cased-squad2",
-                    "mpnet": "../../../models/all-mpnet-base-v2",
+                    "miniLM": "../../../models/all-MiniLM-L6-v2",
                     "t5-e2e": "../../../models/t5-base-e2e-qg",
                     "intent": "../../../models/intent.sav",
                 },
@@ -37,25 +37,25 @@ class APIModel:
                     "dialoGPT": "../../../models/DialoGPT-medium",
                     "t5": "../../../models/t5-large",
                     "bert": "../../../models/bert-base-cased-squad2",
-                    "mpnet": "../../../models/all-mpnet-base-v2",
+                    "miniLM": "../../../models/all-MiniLM-L6-v2",
                     "t5-e2e": "../../../models/t5-base-e2e-qg",
                     "intent": "../../../models/intent.sav",
                 },
-                "xlarge": {
+                "x-large": {
                     "dialoGPT": "../../../models/DialoGPT-large",
                     "t5": "../../../models/t5-large",
                     "bert": "../../../models/bert-base-cased-squad2",
-                    "mpnet": "../../../models/all-mpnet-base-v2",
+                    "miniLM": "../../../models/all-MiniLM-L6-v2",
                     "t5-e2e": "../../../models/t5-base-e2e-qg",
                     "intent": "../../../models/intent.sav",
                 }
             },
-            "selected_flavor": "medium",
+            "selected_flavor": "large",
             "use_cuda": {
                 "dialoGPT": True,
-                "t5": True,
-                "t5-e2e": False,
-                "mpnet": True
+                "t5": False,
+                "t5-e2e": True,
+                "miniLM": False
             }
         }
         self.model = MUKALMA(self.params)

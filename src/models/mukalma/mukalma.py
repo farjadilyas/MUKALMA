@@ -12,7 +12,7 @@
 # Importing Models
 from ...util_models.DialoGPTController import DialoGPTController
 from src.util_models.T5.T5ClozeController import T5ClozeController, getMaskToken
-from ...util_models.MpNet import MpNet
+from ...util_models.SentenceModel import SentenceModel
 from ...util_models.T5.T5ForQuestionGeneration import T5ForQuestionGeneration
 
 # Importing NLU Components
@@ -32,15 +32,13 @@ class MUKALMA:
         cuda.empty_cache()
         print(f"{self.TAG}: CUDA GPU is {'not' if not cuda.is_available() else ''} available on this machine")
 
-        self.knowledge_db = KnowledgeSource()
-
         # Parameter Configurations
         self.flavor_selected = params["selected_flavor"]
         self.flavor_config = params["flavors"][self.flavor_selected]
         self.model_flavors = params["flavors"]
         self.cuda_use = params["use_cuda"]
 
-        self.sentence_model = MpNet(self.flavor_config["mpnet"], use_cuda=self.cuda_use["mpnet"])
+        self.sentence_model = SentenceModel(self.flavor_config["miniLM"], use_cuda=self.cuda_use["miniLM"])
         
         self.intentRecognizer = IntentRecognizer(model_path=self.flavor_config["intent"])
 
@@ -53,6 +51,9 @@ class MUKALMA:
 
         self.cloze_model = T5ClozeController(self.flavor_config["t5"], use_cuda=self.cuda_use["t5"], num_responses=3)
         self.cloze_model.initialize_model()
+
+        # Initialize Knowledge Source using the Sentence Embedding Model of choice
+        self.knowledge_db = KnowledgeSource(self.sentence_model.model)
 
         # Keeps track of the topic that is currently being talked about
         self.topic_str = ""
