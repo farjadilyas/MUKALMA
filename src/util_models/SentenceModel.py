@@ -2,7 +2,7 @@
   MUKALMA - A Knowledge-Powered Conversational Agent
   Project Id: F21-20-R-KBCAgent
 
-  MpNet model controller class
+  SentenceModel model controller class
   - This model provides sentence similarity to a high accuracy level.
   - Computes sentence embeddings, especially useful since similarity scores aren't drastically affected by
   a disparity in the length of input sentences.
@@ -30,9 +30,9 @@ def softmax(x):
     return t_x / t_x.sum(axis=0)
 
 
-class MpNet:
+class SentenceModel:
     def __init__(self, model_path='../../../models/all-mpnet-base-v2', use_cuda=False):
-        self.TAG = 'MpNet'
+        self.TAG = 'SentenceModel'
         self.model = None
 
         self.device = 'cuda' if use_cuda and cuda.is_available() else 'cpu'

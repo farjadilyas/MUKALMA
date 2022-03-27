@@ -27,6 +27,9 @@ from bs4 import BeautifulSoup
 import re
 import nltk
 
+# Import SentenceTransformer for using a Sentence Embedding model
+from sentence_transformers import SentenceTransformer
+
 # Imports for Document Similarity computation
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -99,12 +102,15 @@ def calculate_tfidf_similarity(base_document, documents):
 
 
 class KnowledgeSource:
-    def __init__(self, num_results=1):
+    def __init__(self, model=None, num_results=1):
         # This is a dictionary which keeps track of the content of the article
         # corresponding to their identifier (title)
         self.article_db = {}
 
         self.num_results = num_results
+
+        self.sentence_model = SentenceTransformer('../../../models/all-MiniLM-L6-v2', device='cuda') if model is None \
+            else model
 
     def fetch_topic_data(self, topics, message):
         topic_search_str = ' '.join(topics)
@@ -134,12 +140,11 @@ class KnowledgeSource:
 
         # Now, select the most relevant mini doc (chunk of one or more paragraphs) in the most relevant article
         selected_article_data = articles_data[selected_article_id]
-        mini_doc_embeddings, vectorizer, mini_docs = selected_article_data[1], selected_article_data[2], \
-                                                     selected_article_data[3]
+        mini_doc_embeddings, mini_docs = selected_article_data[1], selected_article_data[2]
 
         # Calculate embedding for the input message using the saved vectorizer for this article
         # Use this with the pre-calculated embeddings for the paragraphs in the article to calculate cosine similarity
-        para_c_sim = cosine_similarity(vectorizer.transform([message]), mini_doc_embeddings).flatten()
+        para_c_sim = cosine_similarity(self.sentence_model.encode([message]), mini_doc_embeddings).flatten()
         selected_para_id = para_c_sim.argmax()
         print(f"SELECTED PARA ID: {selected_para_id}, {len(para_c_sim)}")
         print(f"======= SELECTED PARAGRAPH:\n{mini_docs[selected_para_id]}")
@@ -202,15 +207,13 @@ class KnowledgeSource:
         paras = processed_paras
 
         # Calculate mini_doc embeddings using the processed paragraphs
-        vectorizer = TfidfVectorizer(stop_words='english', binary=True, ngram_range=(1, 3), analyzer='char', lowercase=True)
-        mini_doc_embeddings = vectorizer.fit_transform(paras)
+        mini_doc_embeddings = self.sentence_model.encode(paras)
 
         # For this new article, save the following:
         # entire article text content: used to calculate document-level embeddings when selecting most relevant document
         # embeddings of the mini docs of this article: used when selecting the most-relevant paragraph
-        # vectorizer used to create the mini_doc_embeddings: used to compare docs against an input message / doc
         # the tokenized sentences of the mini docs of this article: uses when applying QA to the most relevant paragraph
-        article_db_entry = (content, mini_doc_embeddings, vectorizer, mini_docs)
+        article_db_entry = (content, mini_doc_embeddings, mini_docs)
         self.article_db[title] = article_db_entry
 
         return article_db_entry
