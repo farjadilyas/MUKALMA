@@ -9,14 +9,16 @@
     - This model should be used for generating human-like dialog grounded on knowledge.
 """
 
+
 # Importing Models
 from ...util_models.DialoGPTController import DialoGPTController
 from src.util_models.T5.T5ClozeController import T5ClozeController, getMaskToken
 from ...util_models.SentenceModel import SentenceModel
 from ...util_models.T5.T5ForQuestionGeneration import T5ForQuestionGeneration
+from ...util_models.FlairPOSTagger import FlairPOSTagger
 
 # Importing NLU Components
-from .nlu.partsOfSpeech import get_pos_with_types, get_nouns, match_questions, truecasing_by_pos, fix_sentence
+from .nlu.partsOfSpeech import get_nouns, match_questions, truecasing_by_pos, fix_sentence
 from .nlu.intentRecognition import IntentRecognizer
 
 from .KnowledgeSource import KnowledgeSource
@@ -52,6 +54,8 @@ class MUKALMA:
         self.cloze_model = T5ClozeController(self.flavor_config["t5"], use_cuda=self.cuda_use["t5"], num_responses=3)
         self.cloze_model.initialize_model()
 
+        self.tagger = FlairPOSTagger('flair/pos-english-fast')
+
         # Initialize Knowledge Source using the Sentence Embedding Model of choice
         self.knowledge_db = KnowledgeSource(self.sentence_model.model)
 
@@ -62,7 +66,7 @@ class MUKALMA:
         pass
 
     def __extract_topic(self, message):
-        pos_list = get_pos_with_types(message)
+        pos_list = self.tagger.get_pos_tags(message)
         pos_words = []
         prev_type = None
         for pos in pos_list:
