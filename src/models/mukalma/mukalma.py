@@ -231,13 +231,13 @@ class MUKALMA:
         # Get a list of topics that may have been mentioned in the message
         topics = self.__extract_topic(message)
 
-        print(f"TOPIC SEARCH STRING: {topics}")
+        print(f"MESSAGE KEYWORDS: {topics}")
 
         # If the message talks about a new topic...
         # Request Knowledge DB to fetch data relevant to the current message, update the db
         # and finally, return the most relevant document for this message
         cur_turn_knowledge, cur_turn_knowledge_tok = "", []
-        if len(topics) != "":
+        if len(topics) != 0:
             cur_turn_knowledge_tok = self.knowledge_db.fetch_topic_data(topics, message)
             cur_turn_knowledge = ' '.join(cur_turn_knowledge_tok)
 
