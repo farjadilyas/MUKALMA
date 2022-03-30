@@ -16,6 +16,7 @@ from src.util_models.T5.T5ClozeController import T5ClozeController, getMaskToken
 from ...util_models.SentenceModel import SentenceModel
 from ...util_models.T5.T5ForQuestionGeneration import T5ForQuestionGeneration
 from ...util_models.FlairPOSTagger import FlairPOSTagger
+from ...util_models.TopicTransitionModel import TopicTransitionModel
 
 # Importing NLU Components
 from .nlu.partsOfSpeech import get_nouns, match_questions, truecasing_by_pos, fix_sentence
@@ -40,7 +41,8 @@ class MUKALMA:
         self.model_flavors = params["flavors"]
         self.cuda_use = params["use_cuda"]
 
-        self.sentence_model = SentenceModel(self.flavor_config["miniLM"], use_cuda=self.cuda_use["miniLM"])
+        self.sentence_model = SentenceModel(self.flavor_config["mpnet"], use_cuda=self.cuda_use["mpnet"])
+        self.fast_sentence_model = SentenceModel(self.flavor_config["miniLM"], use_cuda=self.cuda_use["miniLM"])
         
         self.intentRecognizer = IntentRecognizer(model_path=self.flavor_config["intent"])
 
@@ -56,8 +58,11 @@ class MUKALMA:
 
         self.tagger = FlairPOSTagger('flair/pos-english-fast')
 
-        # Initialize Knowledge Source using the Sentence Embedding Model of choice
+        # Initialize Knowledge Source & Topic Transition Model using the Sentence Embedding Model of choice
         self.knowledge_db = KnowledgeSource(self.sentence_model.model)
+
+        # Responsible for tracking changes in the topic the conversation is centered around
+        self.topic_transition_model = TopicTransitionModel(self.fast_sentence_model.model, use_cuda=self.cuda_use["miniLM"])
 
         # Keeps track of the topic that is currently being talked about
         self.topic_str = ""
@@ -229,7 +234,8 @@ class MUKALMA:
 
     def get_response(self, message):
         # Get a list of topics that may have been mentioned in the message
-        topics = self.__extract_topic(message)
+        # Add keywords from conversation history if they're relevant, and update the topic transition model
+        topics = self.topic_transition_model.update_topic(message, self.__extract_topic(message))
 
         print(f"MESSAGE KEYWORDS: {topics}")
 
