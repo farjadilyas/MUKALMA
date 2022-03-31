@@ -33,13 +33,16 @@ class MUKALMA:
 
         # Check for Nvidia CUDA Support on the machine
         cuda.empty_cache()
-        print(f"{self.TAG}: CUDA GPU is {'not' if not cuda.is_available() else ''} available on this machine")
+        print(f"[{self.TAG}]: __init___: CUDA GPU is {'not' if not cuda.is_available() else ''} available on this machine")
 
         # Parameter Configurations
         self.flavor_selected = params["selected_flavor"]
         self.flavor_config = params["flavors"][self.flavor_selected]
         self.model_flavors = params["flavors"]
         self.cuda_use = params["use_cuda"]
+
+        # ------------------------------------------------------------------------------------------------------------
+        # Loading Models
 
         self.sentence_model = SentenceModel(self.flavor_config["mpnet"], use_cuda=self.cuda_use["mpnet"])
         self.fast_sentence_model = SentenceModel(self.flavor_config["miniLM"], use_cuda=self.cuda_use["miniLM"])
@@ -64,6 +67,8 @@ class MUKALMA:
         # Responsible for tracking changes in the topic the conversation is centered around
         self.topic_transition_model = TopicTransitionModel(self.fast_sentence_model.model, use_cuda=self.cuda_use["miniLM"])
 
+        # ------------------------------------------------------------------------------------------------------------
+        
         # Keeps track of the topic that is currently being talked about
         self.topic_str = ""
 
@@ -95,7 +100,7 @@ class MUKALMA:
         max_id = 0
         for response_id, response in enumerate(responses):
             if log_responses:
-                print(f"[{self.TAG}: {prefix} {response_id}]: {response} .")
+                print(f"[{self.TAG}]: get_best_response_id: {prefix} {response_id}]: {response} .")
             if len(response) > max_length:
                 max_length = len(response)
                 max_id = response_id
@@ -113,7 +118,7 @@ class MUKALMA:
         # Take the word / phrase retrieved from the knowledge source and complete it
         # This is done by framing this task as a Cloze task
         cloze_responses = self.cloze_model.generate_cloze_responses(
-            f"{message} {getMaskToken(0)} {knowledge_sent} {getMaskToken(1)} .".lower()
+            f"[{self.TAG}]: generate_knowledge_based_response: {message} {getMaskToken(0)} {knowledge_sent} {getMaskToken(1)} .".lower()
         )
 
         fragmented_outputs = []
@@ -133,7 +138,7 @@ class MUKALMA:
             fragmented_outputs.extend(fragmented_output)
             outputs.extend(output)
 
-            print(f"OUTPUTS: \n{fragmented_output}")
+            print(f"[{self.TAG}]: generate_knowledge_based_response: OUTPUTS: \n{fragmented_output}")
 
         # Obtain the index of the best response, and lookup the best response string (complete and fragmented on the
         # basis of the method used to generate the string)
@@ -167,7 +172,7 @@ class MUKALMA:
         
         # Intent Recognition
         intent = self.intentRecognizer.recognizeIntent(message)
-        print(f"[{self.TAG}]: Intent: {intent}")
+        print(f"[{self.TAG}]: find_relevant_response: Intent: {intent}")
         knowledge_sent, knowledge_start_index, knowledge_end_index = "", -1, -1
 
         # Setting the question from the either the message (if the message was a question)
@@ -180,16 +185,19 @@ class MUKALMA:
 
         # Fetching answer from T5
         if knowledge_question is not None:
-            print(f"[{self.TAG}]: [Message-Question]: {knowledge_question}")
+            print(f"[{self.TAG}]: find_relevant_response: [Message-Question]: {knowledge_question}")
             selected_question = knowledge_question
             knowledge_sent, knowledge_start_index, knowledge_end_index = \
                 self.cloze_model.get_answers(message, cur_turn_knowledge)
-            print(f"[{self.TAG}]: [CLOZE-Based]: Knowledge sent: {knowledge_sent}")
+            print(f"[{self.TAG}]: find_relevant_response: [CLOZE-Based]: Knowledge sent: {knowledge_sent}")
 
         # If a knowledge_sent couldn't be found, find the most similar sentence instead
         if len(knowledge_sent) == 0:
-            print(f"[{self.TAG}]: SENT TOK KNOWLEDGE: { cur_turn_knowledge_tok }")
-            print(f"\n\nSENT TOK KNOWLEDGE:\n{cur_turn_knowledge_tok[:4]}\n\nmessage:\n{message}")
+            
+            print(f"[{self.TAG}]: find_relevant_response: SENT TOK KNOWLEDGE: { cur_turn_knowledge_tok }")
+            print(f"\n\n[{self.TAG}]: find_relevant_response: SENT TOK KNOWLEDGE:\n{cur_turn_knowledge_tok[:4]}\n\n")
+            print ("[{self.TAG}]: find_relevant_response: message:\n{message}")
+
             knowledge_sents, knowledge_start_index, knowledge_end_index = \
                 self.sentence_model.get_most_similar_sentence(message, cur_turn_knowledge_tok), -1, -1
 
@@ -201,12 +209,12 @@ class MUKALMA:
                 knowledge_questions = []
                 message_nouns = get_nouns(message)
 
-                print(f"[{self.TAG}]: Using the message nouns: {message_nouns}")
+                print(f"[{self.TAG}]: find_relevant_response: Using the message nouns: {message_nouns}")
 
                 # Finding all the questions for each noun we identify in the message
                 message_keyword = " ".join(message_nouns)
                 knowledge_questions.extend(self.question_generation_model.generate_questions(knowledge_sent, message_keyword))
-                print(f"[{self.TAG}]: Questions Generated: {knowledge_questions}")
+                print(f"[{self.TAG}]: find_relevant_response: Questions Generated: {knowledge_questions}")
 
                 # Select the most relevant question from the list of generated questions
                 # based on basic word matching
@@ -215,7 +223,7 @@ class MUKALMA:
                 # Obtain the knowledge span by querying the source using a QA model and the best question
                 if len(selected_questions) != 0:
                     selected_question = selected_questions[0]
-                    print(f"[{self.TAG}]: Using the question: {selected_question}")
+                    print(f"[{self.TAG}]: find_relevant_response: Using the question: {selected_question}")
 
                     knowledge_sent, knowledge_start_index, knowledge_end_index = \
                         self.cloze_model.get_answers(selected_question, knowledge_sent)
@@ -229,7 +237,7 @@ class MUKALMA:
         # End if
 
         # Logging and Return
-        print(f"[{self.TAG}]: Response: {knowledge_sent} start span: {knowledge_start_index} end span: {knowledge_end_index}")
+        print(f"[{self.TAG}]: find_relevant_response: Response: {knowledge_sent} start span: {knowledge_start_index} end span: {knowledge_end_index}")
         return selected_question, knowledge_sent, knowledge_start_index, knowledge_end_index
 
     def get_response(self, message):
@@ -237,7 +245,7 @@ class MUKALMA:
         # Add keywords from conversation history if they're relevant, and update the topic transition model
         topics = self.topic_transition_model.update_topic(message, self.__extract_topic(message))
 
-        print(f"MESSAGE KEYWORDS: {topics}")
+        print(f"[{self.TAG}]: get_response: MESSAGE KEYWORDS: {topics}")
 
         # If the message talks about a new topic...
         # Request Knowledge DB to fetch data relevant to the current message, update the db
@@ -263,7 +271,7 @@ class MUKALMA:
             knowledge_grounded_responses[i] = truecasing_by_pos(knowledge_grounded_responses[i])
 
         # Logging and Return
-        print(f"[{self.TAG}]: GENERATED RESPONSE: {knowledge_grounded_responses}")
+        print(f"[{self.TAG}]: get_response: GENERATED RESPONSE: {knowledge_grounded_responses}")
         return {"knowledge_sent": knowledge_sent,
                 "response": best_response, "candidates": knowledge_grounded_responses,
                 "k_start_index": knowledge_start_index, "k_end_index": knowledge_end_index}
