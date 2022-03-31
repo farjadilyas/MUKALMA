@@ -102,7 +102,7 @@ def calculate_tfidf_similarity(base_document, documents):
 
 
 class KnowledgeSource:
-    def __init__(self, model=None, num_results=1):
+    def __init__(self, model=None, num_results=3):
         # This is a dictionary which keeps track of the content of the article
         # corresponding to their identifier (title)
         self.article_db = {}

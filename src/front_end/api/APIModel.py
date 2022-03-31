@@ -24,6 +24,7 @@ class APIModel:
                     "miniLM": "../../../models/all-MiniLM-L6-v2",
                     "t5-e2e": "../../../models/t5-small-e2e-qg",
                     "intent": "../../../models/intent.sav",
+                    "mpnet": "../../../models/all-mpnet-base-v2"
                 },
                 "medium": {
                     "dialoGPT": "../../../models/DialoGPT-medium",
@@ -32,6 +33,7 @@ class APIModel:
                     "miniLM": "../../../models/all-MiniLM-L6-v2",
                     "t5-e2e": "../../../models/t5-base-e2e-qg",
                     "intent": "../../../models/intent.sav",
+                    "mpnet": "../../../models/all-mpnet-base-v2"
                 },
                 "large": {
                     "dialoGPT": "../../../models/DialoGPT-medium",
@@ -40,6 +42,7 @@ class APIModel:
                     "miniLM": "../../../models/all-MiniLM-L6-v2",
                     "t5-e2e": "../../../models/t5-base-e2e-qg",
                     "intent": "../../../models/intent.sav",
+                    "mpnet": "../../../models/all-mpnet-base-v2"
                 },
                 "x-large": {
                     "dialoGPT": "../../../models/DialoGPT-large",
@@ -48,6 +51,7 @@ class APIModel:
                     "miniLM": "../../../models/all-MiniLM-L6-v2",
                     "t5-e2e": "../../../models/t5-base-e2e-qg",
                     "intent": "../../../models/intent.sav",
+                    "mpnet": "../../../models/all-mpnet-base-v2"
                 }
             },
             "selected_flavor": "large",
@@ -55,7 +59,8 @@ class APIModel:
                 "dialoGPT": True,
                 "t5": False,
                 "t5-e2e": True,
-                "miniLM": False
+                "miniLM": False,
+                "mpnet": False
             }
         }
         self.model = MUKALMA(self.params)
