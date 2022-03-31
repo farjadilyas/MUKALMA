@@ -1,0 +1,19 @@
+.container {
+    position: relative;
+    border: 1px solid gainsboro;
+    width: 100%;
+    height: 450px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+
+.topic-tags-title {
+    text-align: center;
+}
+
+.matched-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

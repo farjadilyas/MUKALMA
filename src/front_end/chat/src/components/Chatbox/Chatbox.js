@@ -12,7 +12,9 @@ import { Mic, MicNone } from '@material-ui/icons';
 import { IconButton } from '@mui/material';
 
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+import useSound from 'use-sound';
 
+import { audio } from '../../constants'
 import './styles.css';
 
 // Scrolling to bottom function
@@ -27,8 +29,6 @@ const Chatbox = ({ messages, setMessages, setSpanSelected, setResponses, setSpee
 
     // State
     const [message, setMessage] = useState('');
-
-    // Using a state for tracking width
     const [width, setWidth] = useState(window.innerWidth)
 
     window.addEventListener('resize', function(event) {
@@ -40,7 +40,12 @@ const Chatbox = ({ messages, setMessages, setSpanSelected, setResponses, setSpee
       transcript,
       listening
     } = useSpeechRecognition();
+
+    // Audio State
+    const [ playMicStartSound ] = useSound(audio.micStart);
+    const [ playMicStopSound ] = useSound(audio.micStop);
   
+    // Use Effects
     // When the transcript changes
     useEffect(() => {
         setMessage(transcript);
@@ -81,13 +86,14 @@ const Chatbox = ({ messages, setMessages, setSpanSelected, setResponses, setSpee
 
     // Toggle between listening states
     const toggleListening = () => {
-        console.log("Listening Started")
+        playMicStartSound();
         SpeechRecognition.startListening()
     }
 
     // When listening stops
     useEffect(() => {
         if (!listening && message.length) {
+            playMicStopSound();
             handleSubmit();
         }
     }, [listening])
@@ -118,7 +124,14 @@ const Chatbox = ({ messages, setMessages, setSpanSelected, setResponses, setSpee
                             required={true}
                         />
                         <IconButton onClick={toggleListening} style={{ marginRight: "10px" }}>
-                            {listening ? <Mic /> : <MicNone />}
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                {listening ? (
+                                    <>
+                                        <div className='pulse-ring' />
+                                        <Mic className='mic-icon'/>
+                                    </>
+                                ) : <MicNone className='mic-icon'/>}
+                            </div>
                         </IconButton>
                     </div>
                 </form>

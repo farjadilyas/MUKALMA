@@ -35,18 +35,6 @@ const Topic = ({ topic, setTopic, topics, setTopics, setSource, setMessages }) =
     return (
         <div className="container">
           <div className='inputGroup'>
-            <InputLabel>
-              Current Topic Tags
-            </InputLabel>
-            <Grid container spacing={1}>
-              {['Multan', 'Multan Qalanders', 'Punjab', 'Chenab River'].map((tag, index) => (
-                <Grid item xs={12} sm={6} md={4}>
-                  <Chip label={tag} variant="outlined" />
-                </Grid>
-              ))}
-            </Grid>
-          </div>
-          <div className='inputGroup'>
             <InputLabel id="topicSelect">
               Select a topic of conversation from our collection
             </InputLabel>

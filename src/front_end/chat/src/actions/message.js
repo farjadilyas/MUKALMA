@@ -17,12 +17,22 @@ export const sendMessage = (
 
         // For Debugging Only
         // Debugging Starts
-        setMessages(messages => [...messages, {
-            "text": "Sorry! I can't answer your question right now! Please try again later",
-            "id": "0",
-            "sender": agent
-        }]);
-        setSpeechText("Sorry! I can't answer your question right now! Please try again later");
+        // setMessages(messages => [...messages, {
+        //     "text": "Sorry!",
+        //     "id": "0",
+        //     "sender": agent
+        // }]);
+        // setMessages(messages => [...messages, {
+        //     "text": "I can't answer your question right now!",
+        //     "id": "0",
+        //     "sender": agent
+        // }]);
+        // setMessages(messages => [...messages, {
+        //     "text": "Please try again later",
+        //     "id": "0",
+        //     "sender": agent
+        // }]);
+        // setSpeechText("Sorry! I can't answer your question right now! Please try again later");
         // Debugging Ends
 
         // const data = await api.sendMessage(message)
@@ -56,10 +66,7 @@ export const sendMessage = (
         // setResponses(responses)
         
         // Updating UI
-        console.log("here");
         hideTyping();
-        // console.log('second scrollToBottom');
-        // scrollToBottom();
         scrollToHighlight(messages.length);
         
     } catch (error) {
