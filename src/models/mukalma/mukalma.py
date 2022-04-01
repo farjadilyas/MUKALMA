@@ -62,7 +62,7 @@ class MUKALMA:
         self.tagger = FlairPOSTagger('flair/pos-english-fast')
 
         # Initialize Knowledge Source & Topic Transition Model using the Sentence Embedding Model of choice
-        self.knowledge_db = KnowledgeSource(self.sentence_model.model)
+        self.knowledge_db = KnowledgeSource(self.sentence_model.model, num_results=1)
 
         # Responsible for tracking changes in the topic the conversation is centered around
         self.topic_transition_model = TopicTransitionModel(self.fast_sentence_model.model, use_cuda=self.cuda_use["miniLM"])
@@ -118,7 +118,7 @@ class MUKALMA:
         # Take the word / phrase retrieved from the knowledge source and complete it
         # This is done by framing this task as a Cloze task
         cloze_responses = self.cloze_model.generate_cloze_responses(
-            f"[{self.TAG}]: generate_knowledge_based_response: {message} {getMaskToken(0)} {knowledge_sent} {getMaskToken(1)} .".lower()
+            f"{message} {getMaskToken(0)} {knowledge_sent} {getMaskToken(1)} .".lower()
         )
 
         fragmented_outputs = []
@@ -272,6 +272,11 @@ class MUKALMA:
 
         # Logging and Return
         print(f"[{self.TAG}]: get_response: GENERATED RESPONSE: {knowledge_grounded_responses}")
-        return {"knowledge_sent": knowledge_sent,
-                "response": best_response, "candidates": knowledge_grounded_responses,
-                "k_start_index": knowledge_start_index, "k_end_index": knowledge_end_index}
+        return {
+            "knowledge_sent": knowledge_sent,
+            "response": best_response, 
+            "candidates": knowledge_grounded_responses,
+            "knowledge_source": cur_turn_knowledge,
+            "k_start_index": knowledge_start_index, 
+            "k_end_index": knowledge_end_index
+        }
