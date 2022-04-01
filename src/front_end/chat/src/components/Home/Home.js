@@ -64,6 +64,7 @@ const Home = () => {
                     <Chatbox 
                         messages={messages} 
                         setMessages={setMessages} 
+                        setSource={setSource}
                         setSpanSelected={setSpanSelected}
                         setResponses={setResponses}
                         setSpeechText={setSpeechText}

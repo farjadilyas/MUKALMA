@@ -8,6 +8,7 @@ import { scrollToBottom } from '../components/Chatbox/Chatbox'
 export const sendMessage = (
         message, 
         setMessages, 
+        setSource,
         setSpanSelected, 
         setResponses, 
         setSpeechText,
@@ -35,39 +36,45 @@ export const sendMessage = (
         // setSpeechText("Sorry! I can't answer your question right now! Please try again later");
         // Debugging Ends
 
-        // const data = await api.sendMessage(message)
+        const data = await api.sendMessage(message)
+        console.log(data);
 
-        // // Retrieving Data
-        // var result = data.data.response
-        // var responseList = result.split(".")
+        // Retrieving Data
+        var result = data.data.response
+        var responseList = result.split(".")
 
-        // // Adding Multiple messages based on the full stops
-        // // Each sentence is uttered as a separate text message
-        // var i
-        // for (i = 0; i < responseList.length; ++i) 
-        // {
-        //     if (responseList[i].length > 5) 
-        //     {
-        //         setMessages(messages => [...messages, {
-        //             "text": responseList[i],
-        //             "id": "0",
-        //             "sender": agent
-        //         }]);
-        //     }
-        // }
+        // Setting the source
+        var source = data.data.knowledge_source;
+        setSource(source);
 
-        // // Setting Span of text by Q/A
-        // // var span = [data.data.k_start_index, data.data.k_end_index]
-        // var span = data.data.knowledge_sent
-        // setSpanSelected(span)
+        // Adding Multiple messages based on the full stops
+        // Each sentence is uttered as a separate text message
+        var i
+        for (i = 0; i < responseList.length - 1; ++i) 
+        {
+            if (responseList[i].length > 0) {
+                setMessages(messages => [...messages, {
+                    "text": responseList[i],
+                    "id": "0",
+                    "sender": agent
+                }]);
+            }
+        }
 
-        // // Setting Candidate Responses
-        // var responses = data.data.candidates
-        // setResponses(responses)
+        // Setting Span of text by Q/A
+        var span = data.data.knowledge_sent
+        setSpanSelected(span)
+
+        // Setting Candidate Responses
+        var responses = data.data.candidates
+        setResponses(responses)
         
         // Updating UI
         hideTyping();
         scrollToHighlight(messages.length);
+
+        // Setting Audio
+        setSpeechText(result);
         
     } catch (error) {
         console.log(error)

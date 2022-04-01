@@ -23,7 +23,7 @@ export const scrollToBottom = () => {
     endOfChat.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
 }
 
-const Chatbox = ({ messages, setMessages, setSpanSelected, setResponses, setSpeechText }) => {
+const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setResponses, setSpeechText }) => {
     // Dispatcher
     const dispatch = useDispatch();
 
@@ -61,7 +61,8 @@ const Chatbox = ({ messages, setMessages, setSpanSelected, setResponses, setSpee
         }])
         dispatch(sendMessage(
             {"message": message}, 
-            setMessages, 
+            setMessages,
+            setSource, 
             setSpanSelected, 
             setResponses, 
             setSpeechText,
