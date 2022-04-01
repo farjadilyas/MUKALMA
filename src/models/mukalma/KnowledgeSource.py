@@ -166,7 +166,7 @@ class KnowledgeSource:
         page = requests.get(f"https://en.wikipedia.org/wiki/{title}")
         soup = BeautifulSoup(page.content, 'lxml')
 
-        article_data = extract_paras_and_heads(soup, title)
+        article_data = extract_paras_and_heads(soup, title, chunk_size=3)
 
         # If no paragraphs could be retrieved, this article is useless
         if article_data is None:

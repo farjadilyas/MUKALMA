@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API = axios.create({ baseURL: "http://fa0d-104-198-130-8.ngrok.io" });
+const API = axios.create({ baseURL: "http://4c94-35-238-238-160.ngrok.io" });
 
 export const fetchPosts = () => API.get('/posts');
 export const createPost = (newPost) => API.post('/posts', newPost);
