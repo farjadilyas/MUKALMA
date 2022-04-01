@@ -80,6 +80,9 @@ class TopicTransitionModel:
         return distances
 
     def order_keywords_by_similarity(self, msg, keywords):
+        if len(keywords) == 0:
+            return []
+
         s_scores = self.calc_sentence_similarity(msg, keywords)
         s_idxs = list_sorted_args(s_scores, reverse=True)
         t_keywords = [keywords[i] for i in s_idxs]

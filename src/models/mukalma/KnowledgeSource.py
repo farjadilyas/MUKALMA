@@ -132,6 +132,9 @@ class KnowledgeSource:
             articles_data.append(article_data)
 
         # Obtain the cosine similarity of the message with the relevant articles for the current topic
+        if (len(docs_content) == 0):
+            return []
+            
         doc_c_sim = calculate_tfidf_similarity(message, docs_content)
 
         # Select the most similar article
