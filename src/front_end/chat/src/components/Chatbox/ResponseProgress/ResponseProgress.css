@@ -1,0 +1,24 @@
+.progress-container {
+    width: 100%;
+    border-radius: 15px 15px 0px 0px;
+    border: 2px solid #f1f0f0;
+    background-color: white;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.status-chip {
+    margin: 10px 100px 10px 100px;
+}
+
+.status-circle {
+    width: 20px;
+    height: 20;
+    align-self: center;
+}
+
+span {
+    font-size: medium;
+}
