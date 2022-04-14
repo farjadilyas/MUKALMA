@@ -9,7 +9,7 @@ import Topic from '../Topic/Topic'
 import Responses from '../Responses/Responses'
 import InformationRetrieval from '../InformationRetrieval/InformationRetrieval';
 
-import './Tabs.css'
+import './TabContainer.css'
 import { IconButton } from '@mui/material';
 import { Close } from '@material-ui/icons' 
 

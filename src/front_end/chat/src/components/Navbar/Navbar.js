@@ -1,11 +1,11 @@
 import { AppBar, Typography } from "@material-ui/core";
 import useStyles from './styles'
 import { motion } from 'framer-motion'
+import { values } from '../../constants'
 
 const Navbar = () => {
+    
     const classes = useStyles();
-
-    const members = `Farjad Ilyas 18I-0436\nNabeel Danish 18I-0579\nSaad Saqlain 18I-0694`
 
     // Building HTML
     return (
@@ -15,7 +15,7 @@ const Navbar = () => {
                     animate={{ x: [-30, 0], opacity: [0, 1] }}
                 >
                     <Typography className={classes.heading} variant="h2" align="center">
-                        MUKALMA
+                        {values.MUKALMA}
                     </Typography>
                 </motion.div>
             </div>
@@ -25,7 +25,7 @@ const Navbar = () => {
                     animate={{ x: [30, 0], opacity: [0, 1] }}
                 >
                     <Typography variant="overline" display="block" gutterBottom className={classes.Members}>
-                        {members}
+                        {values.MEMBERS}
                     </Typography>
                 </motion.div>
             </div>
