@@ -13,27 +13,35 @@ export const sendMessage = (
         setResponses, 
         setSpeechText,
         messages, 
+        setShowProgress,
+        setPaddingBottom
     ) => async () => {
     try {
 
         // For Debugging Only
         // Debugging Starts
-        setMessages(messages => [...messages, {
-            "text": "Sorry!",
-            "id": "0",
-            "sender": agent
-        }]);
-        setMessages(messages => [...messages, {
-            "text": "I can't answer your question right now!",
-            "id": "0",
-            "sender": agent
-        }]);
-        setMessages(messages => [...messages, {
-            "text": "Please try again later",
-            "id": "0",
-            "sender": agent
-        }]);
-        setSpeechText("Sorry! I can't answer your question right now! Please try again later");
+        setTimeout(() => {
+            setMessages(messages => [...messages, {
+                "text": "Sorry!",
+                "id": "0",
+                "sender": agent
+            }]);
+            setMessages(messages => [...messages, {
+                "text": "I can't answer your question right now!",
+                "id": "0",
+                "sender": agent
+            }]);
+            setMessages(messages => [...messages, {
+                "text": "Please try again later",
+                "id": "0",
+                "sender": agent
+            }]);
+            
+            // setSpeechText("Sorry! I can't answer your question right now! Please try again later");
+            setPaddingBottom(0);
+            setShowProgress(false);
+
+        }, 3000);
         // Debugging Ends
 
         // const data = await api.sendMessage(message)

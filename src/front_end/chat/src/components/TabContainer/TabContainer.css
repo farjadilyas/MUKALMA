@@ -17,3 +17,9 @@ h6 {
     display: flex;
     flex-grow: 1;
 }
+
+.tab-hover:hover {
+    color: cornflowerblue;
+    outline: 1px solid cornflowerblue;
+    -webkit-transition: all .4s ease;
+}

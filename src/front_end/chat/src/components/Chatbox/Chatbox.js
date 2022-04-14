@@ -16,6 +16,7 @@ import useSound from 'use-sound';
 
 import { audio } from '../../constants'
 import './styles.css';
+import ResponseProgress from './ResponseProgress/ResponseProgress';
 
 // Scrolling to bottom function
 export const scrollToBottom = () => {
@@ -34,6 +35,14 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
     window.addEventListener('resize', function(event) {
         setWidth(window.innerWidth)
     })
+
+    // Stepper Padding Size code
+    const paddingValues = ['50px', '10px']
+    const [paddingBottom, setPaddingBottom] = useState(0)
+    var numMessages = 1;
+
+    // Progress
+    const [showProgress, setShowProgress] = useState(false);
     
     // Microphone State
     const {
@@ -53,12 +62,19 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
     
     // Function to handle onSubmitMessage
     const onSubmitMessage = (message) => {
-        setTyping();
+
+        // Adding the message to the list
         setMessages(messages => [...messages, {
             "text": message,
             "id": "0",
             "sender": sender
         }])
+        setPaddingBottom(1);
+
+        // Making progress bar visible
+        setShowProgress(true)
+
+        // Dispatching Network calls
         dispatch(sendMessage(
             {"message": message}, 
             setMessages,
@@ -66,7 +82,9 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
             setSpanSelected, 
             setResponses, 
             setSpeechText,
-            messages
+            messages,
+            setShowProgress,
+            setPaddingBottom
         ));
     }
 
@@ -109,8 +127,12 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
                     user={{"uid": "user1"}}
                 />
                 <div className='chat-box-bottom'>
-                    <TypingIndicator />
-                    <div id="end-of-chat" />
+                    { showProgress ? 
+                        <ResponseProgress />
+                        :
+                        <></>
+                    }
+                    <div id="end-of-chat" style={{ paddingBottom: paddingValues[paddingBottom] }}/>
                 </div>
             </div>
             <div className='msg-footer'>

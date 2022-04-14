@@ -79,11 +79,13 @@ const TabContainer = ({
                     aria-label="scrollable prevent tabs example"
                     orientation="vertical"
                 >
-                    {
-                        labels.map((lb, index) => (
-                        <Tab label={lb} wrapped/>
-                        ))
-                    }
+                    {labels.map((lb) => (
+                        <Tab 
+                            label={lb} 
+                            wrapped
+                            className={"tab-hover"}
+                        />
+                    ))}
                 </Tabs>
                 :
                 <></>

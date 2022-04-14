@@ -7,7 +7,7 @@ import { scrollToHighlight } from './scroll'
 const Source = ({ source, spanSelected }) => {
     // Functions are called once the components are rendered
     useEffect(() => {
-        scrollToHighlight();
+        // scrollToHighlight();
     }, []);
 
     // Building HTML
