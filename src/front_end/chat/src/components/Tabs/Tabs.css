@@ -1,3 +1,7 @@
 button:focus {
     outline: none;
 }
+
+.box {
+    height: 100%;
+}

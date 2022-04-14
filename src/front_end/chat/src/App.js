@@ -26,7 +26,7 @@ const App = () => {
     return isLoading ? <SplashScreen /> :
     (
         <BrowserRouter>
-            <Container maxWidth='lg' className="mainContainer">
+            <Container className="mainContainer" maxWidth={false}>
                 <Navbar />
                 <Switch>
                     <Route path="/" exact component={Home}/>
