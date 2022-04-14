@@ -189,7 +189,8 @@ class MUKALMA:
         self.tagger = FlairPOSTagger('flair/pos-english-fast')
 
         # Initialize Knowledge Source & Topic Transition Model using the Sentence Embedding Model of choice
-        self.knowledge_db = KnowledgeSource(self.sentence_model.model, num_results=1)
+        self.knowledge_db = KnowledgeSource(model=self.sentence_model.model, num_results=1, persist=True,
+                                            persist_path='../../../res/knowledge_presets', use_hot_cache=True)
 
         # Responsible for tracking changes in the topic the conversation is centered around
         self.topic_transition_model = TopicTransitionModel(self.fast_sentence_model.model,
@@ -413,3 +414,7 @@ class MUKALMA:
             "k_start_index": knowledge_start_index,
             "k_end_index": knowledge_end_index
         }
+
+    def exit(self):
+        print(f"\n\n[{self.TAG}]: Quitting MUKALMA")
+        self.knowledge_db.close()

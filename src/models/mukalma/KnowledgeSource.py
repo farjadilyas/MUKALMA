@@ -37,6 +37,29 @@ from sklearn.metrics.pairwise import cosine_similarity
 # For dividing lists into smaller chunks
 from itertools import islice
 
+# For saving the KnowledgeSource object, so next time the cache can be loaded in a hot state
+import pickle
+from os.path import exists
+
+KS_FILENAME = 'knowledge_source.pkl'
+
+
+def save_object(obj, filename):
+    with open(filename, 'wb') as output:
+        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
+
+
+def read_object(filename):
+    obj = None
+    try:
+        if exists(filename):
+            print(f"{filename} exists")
+            with open(filename, 'rb') as inp:
+                obj = pickle.load(inp)
+    except (FileNotFoundError, PermissionError):
+        pass
+    return obj
+
 
 def chunk(it, size):
     it = iter(it)
@@ -102,15 +125,46 @@ def calculate_tfidf_similarity(base_document, documents):
 
 
 class KnowledgeSource:
-    def __init__(self, model=None, num_results=3):
-        # This is a dictionary which keeps track of the content of the article
-        # corresponding to their identifier (title)
-        self.article_db = {}
+    def __init__(self, model=None, num_results=3, persist=True, persist_path='', use_hot_cache=True):
+        # Initialize knowledge source, optionally from a previously persisted file
+        # For each cached article, this dictionary stores the article's overall content, its mini paragraphs, and the
+        # precomputed embeddings corresponding to the mini paragraphs
+        persist_location = persist_path + ('/' if persist_path != '' and persist_path[-1] != '/' else '') + KS_FILENAME
+        ks = read_object(persist_location) if use_hot_cache else None
+        if ks is None:
+            print("CREATING NEW KNOWLEDGE SOURCE")
+            self.article_db = {}
+        else:
+            print("USING PERSISTED KNOWLEDGE SOURCE")
+            self.article_db = ks
 
         self.num_results = num_results
 
         self.sentence_model = SentenceTransformer('../../../models/all-MiniLM-L6-v2', device='cuda') if model is None \
             else model
+
+        # Whether the knowledge source object should be persisted at the end of execution
+        self.persist = persist
+        self.persist_location = persist_location if persist else None
+
+    def build_db(self, topics):
+        """
+          Given a list of topics, each consisting of a list of keywords corresponding to the topic, build a database of
+          articles consisting of an num_articles articles for each topic in the list. Stores the overall content,
+          breaks down the content of the article into mini docs, and precomputes embeddings corresponding to these mini
+          docs.
+        """
+        for topic_keywords in topics:
+            topic_search_str = ' '.join(topic_keywords)
+
+            print(f"Fetching data for {topic_search_str}")
+            articles = wikipedia.search(topic_search_str, results=self.num_results)
+            print(f"Using the following relevant articles: {articles}")
+
+            # For every article corresponding to the topic, fetch and save its overall content and embeddings
+            # corresponding to the mini paragraphs of the article
+            for article in articles:
+                self.fetch_article_data(article)
 
     def fetch_topic_data(self, topics, message):
         topic_search_str = ' '.join(topics)
@@ -132,7 +186,7 @@ class KnowledgeSource:
             articles_data.append(article_data)
 
         # Obtain the cosine similarity of the message with the relevant articles for the current topic
-        if (len(docs_content) == 0):
+        if len(docs_content) == 0:
             return []
             
         doc_c_sim = calculate_tfidf_similarity(message, docs_content)
@@ -220,3 +274,11 @@ class KnowledgeSource:
         self.article_db[title] = article_db_entry
 
         return article_db_entry
+
+    def close(self):
+        """
+         Save the knowledge acquired over the course of Knowledge Source's lifetime to disk
+        """
+        if not self.persist:
+            return
+        save_object(self.article_db, self.persist_location)
