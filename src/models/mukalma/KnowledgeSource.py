@@ -206,7 +206,7 @@ class KnowledgeSource:
         print(f"SELECTED PARA ID: {selected_para_id}, {len(para_c_sim)}")
         print(f"======= SELECTED PARAGRAPH:\n{mini_docs[selected_para_id]}")
 
-        return mini_docs[selected_para_id]
+        return mini_docs[selected_para_id], articles[selected_article_id]
 
     def fetch_article_data(self, title):
         article_db_entry = self.article_db.get(title, None)

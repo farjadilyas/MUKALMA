@@ -9,11 +9,12 @@
 
 # Imports
 from ...models.mukalma.mukalma import MUKALMA
+from threading import Thread
 
 
 # Class Definition
 class APIModel:
-    def __init__(self, source):
+    def __init__(self, source, progress_update_queue):
         self.params = {
             "source": source,
             "flavors": {
@@ -63,13 +64,17 @@ class APIModel:
                 "mpnet": False
             }
         }
-        self.model = MUKALMA(self.params)
+        self.model = MUKALMA(self.params, progress_update_queue)
 
     def updateKnowledge(self, knowledge):
         self.model.set_knowledge_source(knowledge)
 
     def reply(self, message):
-        return self.model.get_response(message)
+        # Spawn a thread to asynchronously generate a response for the message received
+        t = Thread(target=self.model.get_response, args=(message, ))
+        t.daemon = True
+        t.start()
+        return {}
 
     def exit(self):
         self.model.exit()

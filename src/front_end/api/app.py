@@ -20,15 +20,21 @@ import time
 # To register clean-up actions when exiting the Flask App
 import atexit
 
+# For thread-safe progress updates
+from queue import Queue, Empty
 
 # Defining the Flask APP and Setting up the
 # Cross-Origin Resource Policy for the web-based front_end
 app = Flask(__name__)
 CORS(app)
 
+# Queue and variables used for progress updates
+progress_queue = Queue(maxsize=4)
+__PROGRESS_UPDATE_TIMEOUT = 40  # Timeout in seconds
+
 # Creating Models to be used by the API
 knowledge_retriever = KnowledgeRetriever()
-test_model = APIModel(knowledge_retriever.selected_knowledge)
+test_model = APIModel(knowledge_retriever.selected_knowledge, progress_update_queue=progress_queue)
 
 
 # defining function to run on shutdown
@@ -58,6 +64,22 @@ def get_reply():
 
 
 # End of route
+
+@app.route('/get_update', methods=['GET'])
+def get_update():
+    print("Received Request for Update")
+    update = {}
+    status = 404
+    try:
+        update = progress_queue.get(block=True, timeout=40)
+        print("Update available, sending..")
+        status = 200
+    except Empty:
+        status = 404
+    finally:
+        update["status"] = status
+        return jsonify(update), status
+
 
 @app.route('/source', methods=['GET'])
 def get_source():
