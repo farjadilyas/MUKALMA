@@ -1,5 +1,12 @@
 .mainContainer {
-    padding-left: 0px;
-    padding-right: 0px;
     margin-top: 130px;
+    height: 80%;
+}
+
+.gridContainer {
+    height: 100%;
+}
+
+.gridItem {
+    height: 100%;
 }

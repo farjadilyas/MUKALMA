@@ -51,7 +51,7 @@ const TabContainer = ({
   }
 
   return (
-    <Box sx={{ maxWidth: 620, bgcolor: 'background.paper' }}>
+    <Box sx={{ bgcolor: 'background.paper' }} className={"box"}>
       <Tabs
         value={value}
         onChange={handleChange}
@@ -62,7 +62,7 @@ const TabContainer = ({
             <Tab label={lb} wrapped/>
           ))}
       </Tabs>
-      <Box sx={{ maxWidth: 620, minHeight: 450 }}>
+      <Box className={"box"}>
             {componentSelect(value)}
       </Box>
     </Box>
