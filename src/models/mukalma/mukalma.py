@@ -40,7 +40,7 @@ def clean_answer(s):
     """
 
     # Match an opening bracket and its preceding character, or a closing bracket and its following character
-    splits = re.split('(.?\(|\).?)', s)
+    splits = re.split(r'(.?\(|\).?)', s)
     cleaned_ans = ""
 
     # If the split encountered is an opening bracket, introduce a comma before appending its preceding character
@@ -54,6 +54,9 @@ def clean_answer(s):
             cleaned_ans = f"{cleaned_ans},{split[1]}"
         else:
             cleaned_ans = f"{cleaned_ans}{split}"
+
+    # Replace a range in the form of number - number to the form number to number
+    cleaned_ans = re.sub(r'([0-9]+[^ ]*) ?- ?([0-9]+)', r'\1 to \2', cleaned_ans)
 
     return cleaned_ans
 
