@@ -21,12 +21,23 @@
 # Imports
 import en_core_web_sm
 from collections.abc import Iterable
+from nltk.stem import WordNetLemmatizer
 
 # Defining NLP instance, which is used to access the
 # functions
 nlp = en_core_web_sm.load()
 
-# Dependency Markers for tokens that are used to identify them in the 
+lemmatizer = None
+
+
+def get_lemmatizer():
+    global lemmatizer
+    if lemmatizer is None:
+        lemmatizer = WordNetLemmatizer()
+    return lemmatizer
+
+
+# Dependency Markers for tokens that are used to identify them in the
 # parser tree formed by the nltk POS Tagging
 SUBJECTS = {"nsubj", "nsubjpass", "csubj", "csubjpass", "agent", "expl"}
 OBJECTS = {"dobj", "dative", "attr", "oprd"}
@@ -65,12 +76,15 @@ rights = 'rights'
 escapes = ''.join([chr(char) for char in range(1, 32)])
 translator = str.maketrans('', '', escapes)
 
+
 # Function to generate and clean SVOs
 def cleanGenerateSVAOs(s, va, o):
     s = s.translate(translator)
     va = va.translate(translator)
     o = o.translate(translator)
     return (s, va, o)
+
+
 # End of function
 
 # Function to check for a conjunction in the tokens
@@ -79,6 +93,8 @@ def containsConjunction(depSet):
         if conjunction in depSet:
             return True
     return False
+
+
 # End of function
 
 # Function to check for a negated Verb
@@ -88,6 +104,8 @@ def isNegated(tok):
         if dep.lower_ in NEGATIONS:
             return True
     return False
+
+
 # End of function
 
 # Function to retrieve the entities (subjects/objects) around a particular entity that are linked
@@ -110,6 +128,8 @@ def getEntitiesFromConjunctions(entities, subject=True):
                 moreEntities.extend(getEntitiesFromConjunctions(moreEntities, subject))
     # End for
     return moreEntities
+
+
 # End of function
 
 # Function to traverse the parsed tree and find subjects
@@ -135,6 +155,8 @@ def findSubjects(token):
         return [head], isNegated(token)
 
     return [], False
+
+
 # End of function
 
 # Function to get Objects that are linked using prepositions
@@ -148,6 +170,8 @@ def getObjectsFromPrepositions(deps, passive):
         # End if
     # End for
     return objects
+
+
 # End of function
 
 # Function to get objects from open complements - xcomp, where verb has no subject
@@ -164,6 +188,8 @@ def getObjectsFromXCOMP(deps, passive):
         # End if
     # End for
     return None, None
+
+
 # End of function
 
 # Function to get all the objects that are linked with Adjectives
@@ -186,6 +212,8 @@ def getAllObjectsWithAdjectives(verb, passive):
         objects.extend(getEntitiesFromConjunctions(objects, subject=False))
 
     return verb, objects
+
+
 # End of function
 
 # Function to generate Adjectives on the Left and Right side of the 
@@ -209,6 +237,8 @@ def generateLeftRightAdjectives(object):
     # End for
 
     return objectDescTokens
+
+
 # End of function
 
 # Function to generate Sub Compound from the given subject
@@ -232,6 +262,8 @@ def generateSubCompound(subject):
     # End for
 
     return subCompound
+
+
 # End of function
 
 # Function to get all the subjects adjacent to the verb passed to it
@@ -246,16 +278,22 @@ def getAllSubjects(verb):
         subjects.extend(foundSubjects)
 
     return subjects, verbNegated
+
+
 # End of function
 
 # Function to check if the given token is a non auxiliary verbs
 def isNonAuxVerb(token):
     return token.pos_ == VERB and (token.dep_ != aux and token.dep_ != auxpass)
+
+
 # End of function
 
 # Function to check if the given token is a verb (aux or not)
 def isVerb(token):
     return token.pos_ == VERB or token.pos_ == AUX
+
+
 # End of function
 
 # Function to find all the verbs
@@ -267,6 +305,8 @@ def findVerbs(tokens):
         verbs = [tok for tok in tokens if isVerb(tok)]
 
     return verbs
+
+
 # End of function
 
 # Function to return the verb to the right of given verb linked in a 
@@ -284,6 +324,8 @@ def rightOfVerbIsConjuctiveVerb(verb):
     # End if
 
     return False, verb
+
+
 # End of function
 
 # Function to get all the objects for an active/passive sentence
@@ -304,6 +346,8 @@ def getAllObjects(verb, passive):
         objects.extend(getEntitiesFromConjunctions(objects, subject=False))
 
     return verb, objects
+
+
 # End of function
 
 # Function to check for passive sentences
@@ -314,6 +358,8 @@ def isPassive(tokens):
             # End if
     # End for
     return False
+
+
 # End of function
 
 # Function to resolve SUBJECT 'that' OBJECT if found
@@ -324,6 +370,8 @@ def getTHATResolution(tokens):
             # End if
     # End for
     return None
+
+
 # End of function
 
 # Expanding the object / subject NP using a small chunk of the
@@ -370,6 +418,8 @@ def expand(item, tokens, visited):
     # End if
 
     return parts
+
+
 # End of function
 
 # Function to convert the NLTK token object into a string
@@ -378,14 +428,18 @@ def toString(tokens):
         return ' '.join([item.text for item in tokens])
     else:
         return ''
+
+
 # End of function
 
 def get_non_numeric_named_entities():
     return ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT', 'WORK_OF_ART']
 
-def extract_named_entities(message, ner_list):
+
+def extract_named_entities(message, ner_list=None):
     processed_doc = nlp(message)
-    return [ner.text for ner in processed_doc.ents if ner.label_ in ner_list]
+    return [(ner.text, ner.label_) for ner in processed_doc.ents]
+
 
 # End of function
 

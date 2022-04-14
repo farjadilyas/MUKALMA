@@ -1,4 +1,6 @@
-beautifulsoup4==4.10.0
+beautifulsoup4==4.11.1
+dateparser==1.1.1
+en_core_web_sm==3.2.0
 flair==0.10
 Flask==0.12.2
 Flask_Cors==3.0.10
@@ -8,9 +10,10 @@ numpy==1.21.5
 pandas==1.4.1
 Pattern==3.6
 requests==2.27.1
-rich==12.0.1
+rich==12.2.0
 scikit_learn==1.0.2
 scipy==1.8.0
 sentence_transformers==2.2.0
 torch==1.11.0
 wikipedia==1.4.0
+word2number==1.1
