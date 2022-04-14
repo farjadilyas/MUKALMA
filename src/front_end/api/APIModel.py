@@ -70,3 +70,6 @@ class APIModel:
 
     def reply(self, message):
         return self.model.get_response(message)
+
+    def exit(self):
+        self.model.exit()

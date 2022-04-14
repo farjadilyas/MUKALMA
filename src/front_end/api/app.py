@@ -4,7 +4,7 @@
 
   app.py  - A Flask Application
     - Creates a pipeline model that provides interface functions to be routed from the API
-    - Providse a flask API Application that is hosted locally to be connected from the front_end
+    - Provides a flask API Application that is hosted locally to be connected from the front_end
 """
 
 # Imports
@@ -17,6 +17,10 @@ from ...knowledge_retrieval.knowledge_retriever import KnowledgeRetriever, topic
 from .APIModel import APIModel
 import time
 
+# To register clean-up actions when exiting the Flask App
+import atexit
+
+
 # Defining the Flask APP and Setting up the
 # Cross-Origin Resource Policy for the web-based front_end
 app = Flask(__name__)
@@ -25,6 +29,15 @@ CORS(app)
 # Creating Models to be used by the API
 knowledge_retriever = KnowledgeRetriever()
 test_model = APIModel(knowledge_retriever.selected_knowledge)
+
+
+# defining function to run on shutdown
+def cleanup():
+    test_model.exit()
+
+
+# Register the function to be called on exit
+atexit.register(cleanup)
 
 
 # ---------------------------------------------------------------------------
