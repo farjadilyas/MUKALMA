@@ -18,63 +18,63 @@ export const sendMessage = (
 
         // For Debugging Only
         // Debugging Starts
-        // setMessages(messages => [...messages, {
-        //     "text": "Sorry!",
-        //     "id": "0",
-        //     "sender": agent
-        // }]);
-        // setMessages(messages => [...messages, {
-        //     "text": "I can't answer your question right now!",
-        //     "id": "0",
-        //     "sender": agent
-        // }]);
-        // setMessages(messages => [...messages, {
-        //     "text": "Please try again later",
-        //     "id": "0",
-        //     "sender": agent
-        // }]);
-        // setSpeechText("Sorry! I can't answer your question right now! Please try again later");
+        setMessages(messages => [...messages, {
+            "text": "Sorry!",
+            "id": "0",
+            "sender": agent
+        }]);
+        setMessages(messages => [...messages, {
+            "text": "I can't answer your question right now!",
+            "id": "0",
+            "sender": agent
+        }]);
+        setMessages(messages => [...messages, {
+            "text": "Please try again later",
+            "id": "0",
+            "sender": agent
+        }]);
+        setSpeechText("Sorry! I can't answer your question right now! Please try again later");
         // Debugging Ends
 
-        const data = await api.sendMessage(message)
-        console.log(data);
+        // const data = await api.sendMessage(message)
+        // console.log(data);
 
-        // Retrieving Data
-        var result = data.data.response
-        var responseList = result.split(".")
+        // // Retrieving Data
+        // var result = data.data.response
+        // var responseList = result.split(".")
 
-        // Setting the source
-        var source = data.data.knowledge_source;
-        setSource(source);
+        // // Setting the source
+        // var source = data.data.knowledge_source;
+        // setSource(source);
 
-        // Adding Multiple messages based on the full stops
-        // Each sentence is uttered as a separate text message
-        var i
-        for (i = 0; i < responseList.length - 1; ++i) 
-        {
-            if (responseList[i].length > 0) {
-                setMessages(messages => [...messages, {
-                    "text": responseList[i],
-                    "id": "0",
-                    "sender": agent
-                }]);
-            }
-        }
+        // // Adding Multiple messages based on the full stops
+        // // Each sentence is uttered as a separate text message
+        // var i
+        // for (i = 0; i < responseList.length - 1; ++i) 
+        // {
+        //     if (responseList[i].length > 0) {
+        //         setMessages(messages => [...messages, {
+        //             "text": responseList[i],
+        //             "id": "0",
+        //             "sender": agent
+        //         }]);
+        //     }
+        // }
 
-        // Setting Span of text by Q/A
-        var span = data.data.knowledge_sent
-        setSpanSelected(span)
+        // // Setting Span of text by Q/A
+        // var span = data.data.knowledge_sent
+        // setSpanSelected(span)
 
-        // Setting Candidate Responses
-        var responses = data.data.candidates
-        setResponses(responses)
+        // // Setting Candidate Responses
+        // var responses = data.data.candidates
+        // setResponses(responses)
         
-        // Updating UI
-        hideTyping();
-        scrollToHighlight(messages.length);
+        // // Updating UI
+        // hideTyping();
+        // scrollToHighlight(messages.length);
 
-        // Setting Audio
-        setSpeechText(result);
+        // // Setting Audio
+        // setSpeechText(result);
         
     } catch (error) {
         console.log(error)
