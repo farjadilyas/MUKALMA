@@ -157,8 +157,9 @@ def clean_input(s):
 
 
 class MUKALMA:
-    def __init__(self, params):
+    def __init__(self, params, progress_update_queue):
         self.TAG = 'MUKALMA'
+        self.progress_update_queue = progress_update_queue
 
         # Check for Nvidia CUDA Support on the machine
         cuda.empty_cache()
@@ -239,12 +240,14 @@ class MUKALMA:
 
         return max_id
 
-    def generate_knowledge_based_response(self, message, knowledge_sent, extracted_question=""):
+    def generate_knowledge_based_response(self, message, knowledge_sent):
         message = fix_sentence(message)
 
         # If a relevant knowledge sentence couldn't be found, return the best response the dialogue model could generate
         if knowledge_sent == "":
             responses = self.dialogue_model.predict(message, output_fragment=knowledge_sent)
+            self.progress_update_queue.put_nowait({"id": 2, "message": "Knowledge source could not be found",
+                                                   "success": False})
             return responses[self.get_best_response_id(responses)], responses
 
         # Take the word / phrase retrieved from the knowledge source and complete it
@@ -252,6 +255,8 @@ class MUKALMA:
         cloze_responses = self.cloze_model.generate_cloze_responses(
             f"{message} {getMaskToken(0)} {knowledge_sent} {getMaskToken(1)} ."
         )
+
+        self.progress_update_queue.put_nowait({"id": 2, "message": "Cloze completion complete", "success": True})
 
         fragmented_outputs = []
         outputs = []
@@ -387,16 +392,25 @@ class MUKALMA:
         # If the message talks about a new topic...
         # Request Knowledge DB to fetch data relevant to the current message, update the db
         # and finally, return the most relevant document for this message
-        cur_turn_knowledge, cur_turn_knowledge_tok = "", []
+        knowledge_article, cur_turn_knowledge, cur_turn_knowledge_tok = "", "", []
         if len(topics) != 0:
-            cur_turn_knowledge_tok = self.knowledge_db.fetch_topic_data(topics, message)
+            cur_turn_knowledge_tok, knowledge_article = self.knowledge_db.fetch_topic_data(topics, message)
             cur_turn_knowledge = ' '.join(cur_turn_knowledge_tok)
+
+        ks_found = knowledge_article != ""
+        self.progress_update_queue.put_nowait({"id": 0, "message": f"Knowledge fetched from article {knowledge_article}"
+                                               if ks_found else "Knowledge source not found", "success": ks_found})
 
         # Retrieve the relevant knowledge sentence from the knowledge source
         selected_question, knowledge_sent, knowledge_start_index, knowledge_end_index = "", "", 0, 0
         if len(cur_turn_knowledge_tok) != 0:
             selected_question, knowledge_sent, knowledge_start_index, knowledge_end_index = self.find_relevant_response(
                 message, cur_turn_knowledge, cur_turn_knowledge_tok)
+
+        self.progress_update_queue.put_nowait(
+            {"id": 1, "message": "Knowledge span extracted" if ks_found else "Knowledge source not found",
+             "success": ks_found}
+        )
 
         # Condition on the knowledge sentence, and generate knowledge-grounded dialog
         best_response, knowledge_grounded_responses = \
@@ -409,14 +423,19 @@ class MUKALMA:
 
         # Logging and Return
         print(f"[{self.TAG}]: get_response: GENERATED RESPONSE: {knowledge_grounded_responses}")
-        return {
+        response = {
             "knowledge_sent": knowledge_sent,
             "response": best_response,
             "candidates": knowledge_grounded_responses,
             "knowledge_source": cur_turn_knowledge,
             "k_start_index": knowledge_start_index,
-            "k_end_index": knowledge_end_index
+            "k_end_index": knowledge_end_index,
+            "id": 3,
+            "message": "Response generated",
+            "success": True
         }
+        self.progress_update_queue.put_nowait(response)
+        return response
 
     def exit(self):
         print(f"\n\n[{self.TAG}]: Quitting MUKALMA")
