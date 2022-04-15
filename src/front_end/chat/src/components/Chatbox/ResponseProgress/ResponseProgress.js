@@ -3,7 +3,7 @@ import './ResponseProgress.css'
 
 import { Stepper, Step, StepButton, Chip, CircularProgress } from '@material-ui/core'
 
-const ResponseProgress = () => {
+const ResponseProgress = ({ responseProgressMessage }) => {
 
     // Steps
     const steps = [0, 1, 2, 3]
@@ -20,7 +20,7 @@ const ResponseProgress = () => {
             </Stepper>
             <CircularProgress className={"status-circle"} size={20}/>
             <Chip 
-                label={"Fetching Knowledge"}  
+                label={responseProgressMessage}  
                 className={"status-chip"}  
                 variant="outlined"
                 color="primary" 
