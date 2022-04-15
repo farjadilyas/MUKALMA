@@ -26,8 +26,6 @@ export default class Speech extends Component {
   }
 
   componentDidUpdate() {
-    console.log("Update!");
-    console.log("play_audio:", this.props.play_audio);
     if (this.props.play_audio && this.mounted) {
       this.play();
       this.props.setPlayAudio(false);

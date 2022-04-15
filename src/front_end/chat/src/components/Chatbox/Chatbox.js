@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux';
 
-import { sendMessage } from '../../actions/message'
+import { sendMessage, waitForResponse } from '../../actions/message'
 import { sender } from './state';
 
-import TypingIndicator from './TypingIndicator/TypingIndicator'
-import { setTyping } from './TypingIndicator/setTyping';
 import MessageList from './MessageList/MessageList'
 
 import { Mic, MicNone } from '@material-ui/icons';
@@ -43,6 +41,7 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
 
     // Progress
     const [showProgress, setShowProgress] = useState(false);
+    const [responseProgressMessage, setResponseProgressMessage] = useState('')
     
     // Microphone State
     const {
@@ -75,17 +74,25 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
         setShowProgress(true)
 
         // Dispatching Network calls
+        // For Message
         dispatch(sendMessage(
-            {"message": message}, 
-            setMessages,
-            setSource, 
-            setSpanSelected, 
-            setResponses, 
-            setSpeechText,
-            messages,
-            setShowProgress,
-            setPaddingBottom
-        ));
+            {"message": message}
+        ))
+
+        // For Progress
+        setTimeout(() => {
+            dispatch(waitForResponse( 
+                setMessages,
+                setSource, 
+                setSpanSelected, 
+                setResponses, 
+                setSpeechText,
+                messages,
+                setShowProgress,
+                setPaddingBottom,
+                setResponseProgressMessage
+            ));
+        }, 5000)
     }
 
     // Submit Function
@@ -128,7 +135,7 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
                 />
                 <div className='chat-box-bottom'>
                     { showProgress ? 
-                        <ResponseProgress />
+                        <ResponseProgress responseProgressMessage={responseProgressMessage}/>
                         :
                         <></>
                     }
