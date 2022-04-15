@@ -237,9 +237,8 @@
 }
 
 .timestamp {
-  font-size: 8px;
+  font-size: 10px;
   text-align: right;
-  font-style: italic;
 }
 
 p {
