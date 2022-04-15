@@ -41,7 +41,8 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
 
     // Progress
     const [showProgress, setShowProgress] = useState(false);
-    const [responseProgressMessage, setResponseProgressMessage] = useState('')
+    const [responseProgressMessage, setResponseProgressMessage] = useState('Fetching knowledge source ...');
+    const [activeStep, setActiveStep] = useState(0);
     
     // Microphone State
     const {
@@ -71,6 +72,7 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
         setPaddingBottom(1);
 
         // Making progress bar visible
+        console.log("Changing ProgressBar to True")
         setShowProgress(true)
 
         // Dispatching Network calls
@@ -90,9 +92,10 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
                 messages,
                 setShowProgress,
                 setPaddingBottom,
-                setResponseProgressMessage
+                setResponseProgressMessage,
+                setActiveStep
             ));
-        }, 5000)
+        }, 500)
     }
 
     // Submit Function
@@ -135,7 +138,9 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
                 />
                 <div className='chat-box-bottom'>
                     { showProgress ? 
-                        <ResponseProgress responseProgressMessage={responseProgressMessage}/>
+                        <ResponseProgress 
+                            responseProgressMessage={responseProgressMessage}
+                            activeStep={activeStep}/>
                         :
                         <></>
                     }

@@ -3,7 +3,7 @@ import './ResponseProgress.css'
 
 import { Stepper, Step, StepButton, Chip, CircularProgress } from '@material-ui/core'
 
-const ResponseProgress = ({ responseProgressMessage }) => {
+const ResponseProgress = ({ responseProgressMessage, activeStep }) => {
 
     // Steps
     const steps = [0, 1, 2, 3]
@@ -11,7 +11,7 @@ const ResponseProgress = ({ responseProgressMessage }) => {
     // Building Layout
     return (
         <div className={"progress-container"}>
-            <Stepper activeStep={0} alternativeLabel>
+            <Stepper activeStep={activeStep} alternativeLabel>
                 {steps.map((id) => (
                     <Step key={id} >
                         <StepButton color="inherit"/>

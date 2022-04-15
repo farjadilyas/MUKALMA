@@ -22,7 +22,8 @@ export const waitForResponse = (
         messages, 
         setShowProgress,
         setPaddingBottom,
-        setResponseProgressMessage
+        setResponseProgressMessage,
+        setActiveStep
     ) => async () => {
     try {
 
@@ -62,50 +63,61 @@ export const waitForResponse = (
         for (let i = 0; i < 3; ++i) {
             var data = await api.waitForResponse()
             setResponseProgressMessage(data.data.message)
-            console.log(data);
+            setActiveStep(i)
         }
         
         // Retrieving Data for Final Response
+        setActiveStep(3)
         var data = await api.waitForResponse()
-        console.log(data);
 
+        // Setting final progress element
+        setActiveStep(4)
+        setResponseProgressMessage(data.data.message)
+
+        // Getting Conversation Response
         var result = data.data.response
         var responseList = result.split(".")
 
-        // Setting the source
-        var source = data.data.knowledge_source;
-        setSource(source);
+        // Pausing for a second before updating everything
+        setTimeout(() => {
 
-        // Adding Multiple messages based on the full stops
-        // Each sentence is uttered as a separate text message
-        var i
-        for (i = 0; i < responseList.length - 1; ++i) 
-        {
-            if (responseList[i].length > 0) {
-                setMessages(messages => [...messages, {
-                    "text": responseList[i],
-                    "id": "0",
-                    "sender": agent
-                }]);
+            // Setting the source
+            var source = data.data.knowledge_source;
+            setSource(source);
+
+
+            // Adding Multiple messages based on the full stops
+            // Each sentence is uttered as a separate text message
+            var i
+            for (i = 0; i < responseList.length - 1; ++i) 
+            {
+                if (responseList[i].length > 0) {
+                    setMessages(messages => [...messages, {
+                        "text": responseList[i],
+                        "id": "0",
+                        "sender": agent
+                    }]);
+                }
             }
-        }
 
-        // Setting Span of text by Q/A
-        var span = data.data.knowledge_sent
-        setSpanSelected(span)
+            // Setting Span of text by Q/A
+            var span = data.data.knowledge_sent
+            setSpanSelected(span)
 
-        // Setting Candidate Responses
-        var responses = data.data.candidates
-        setResponses(responses)
-        
-        // Updating UI
-        setPaddingBottom(0);
-        setShowProgress(false);
-        scrollToHighlight(messages.length);
+            // Setting Candidate Responses
+            var responses = data.data.candidates
+            setResponses(responses)
 
-        // Setting Audio
-        setSpeechText(result);
-        
+            // Updating UI
+            setPaddingBottom(0);
+            setShowProgress(false);
+            setActiveStep(0)
+            setResponseProgressMessage('Fetching knowledge source ...')
+            // scrollToHighlight(messages.length);
+
+            // Setting Audio
+            setSpeechText(result);
+        }, 1000)
     } catch (error) {
         console.log(error)
     }
