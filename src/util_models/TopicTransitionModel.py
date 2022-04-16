@@ -63,6 +63,7 @@ class TopicTransitionModel:
         self.sent_changed_topic = self.prev_msg = TopicTransitionModel.__control_msg
         self.prev_keywords = []
         self.pass_through = []
+        self.c_keywords = []    # Remember current keywords in case a safer version of current turn keywords is required
 
         # Keeping track of False Postives
         self.FALSE_TOPIC_CHANGE_LIMIT = 3
@@ -122,8 +123,23 @@ class TopicTransitionModel:
         # Setting Previous keywords
         self.prev_msg = message
         self.prev_keywords = t_keywords
-        
+
+        self.c_keywords = c_keywords
         return t_keywords
     # End of function
+
+    def report_topic_change(self):
+        """
+          Tells this TopicTransitionModel that the current turn it just processed did, in fact, introduce a change in
+          the topic. This method serves as a form of feedback to this model, so it can adjust its parameters and
+          consider this turn to be the start of a new topic
+        :return: The keywords extracted from this turn alone, with pass-through keywords no longer being considered
+        """
+
+        # Set prev_keywords, to be used for the next turn, to t_keywords, minus pass-through keywords, which is
+        # equivalent to c_keywords
+        self.prev_keywords = self.c_keywords
+        self.pass_through = []
+        return self.c_keywords
     
 # End of class

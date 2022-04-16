@@ -1,6 +1,6 @@
 """
   MUKALMA - A Knowledge-Powered Conversational Agent
-  Project Id: F21-20-R-KBCAgent
+  Project ID: F21-20-R-KBCAgent
 
   MUKALMA Class
     - Primary pipeline class for MUKALMA, as developed in Iteration 1 and 2 of the project
@@ -96,6 +96,7 @@ def clean_input(s):
             dt = dp.parse(ne[0])
         except:
             dt = None
+
         if dt is not None:
             replace = str(dt.year)
         else:
@@ -163,8 +164,8 @@ class MUKALMA:
 
         # Check for Nvidia CUDA Support on the machine
         cuda.empty_cache()
-        print(
-            f"[{self.TAG}]: __init___: CUDA GPU is {'not' if not cuda.is_available() else ''} available on this machine")
+        print(f"[{self.TAG}]: __init___: CUDA GPU is {'not' if not cuda.is_available() else ''}"
+              f" available on this machine")
 
         # Parameter Configurations
         self.flavor_selected = params["selected_flavor"]
@@ -241,19 +242,36 @@ class MUKALMA:
         return max_id
 
     def generate_knowledge_based_response(self, message, knowledge_sent):
+        """
+          Given knowledge_sent, generate a human-like response around it using phrase-completion by modelling it as a
+          Cloze task. Finally, use dialog generation using the phrase-completed sentence to generate a human-like
+          follow-up response
+        :param message: User message MUKALMA is replying to
+        :param knowledge_sent: Extracted span of knowledge in the form of a phrase that must be transformed into a
+          human-like sentence
+        :return: A human-like, knowledge-based response to the message received in the previous turn of conversation
+        """
+        print(f"\n\n{'=' * 100}\n[{self.TAG}]: GENERATING RESPONSES USING EXTRACTED KNOWLEDGE SPAN\n{'=' * 100}\n")
         message = fix_sentence(message)
 
         # If a relevant knowledge sentence couldn't be found, return the best response the dialogue model could generate
         if knowledge_sent == "":
             responses = self.dialogue_model.predict(message, output_fragment=knowledge_sent)
-            self.progress_update_queue.put_nowait({"id": 2, "message": "Knowledge source could not be found",
-                                                   "success": False})
+            self.progress_update_queue.put_nowait(
+                {"id": 2, "message": "Knowledge source could not be found", "success": False}
+            )
             return responses[self.get_best_response_id(responses)], responses
 
+        sent_end_chars = ['.', '!', '?']
+
+        # If the knowledge sentence ends with a period, then don't attempt cloze completion after the period
+        right_mask = f" {getMaskToken(1)}"
+        if knowledge_sent.rstrip()[-1] in sent_end_chars:
+            right_mask = ""
         # Take the word / phrase retrieved from the knowledge source and complete it
         # This is done by framing this task as a Cloze task
         cloze_responses = self.cloze_model.generate_cloze_responses(
-            f"{message} {getMaskToken(0)} {knowledge_sent} {getMaskToken(1)} ."
+            f"{message} {getMaskToken(0)} {knowledge_sent}{right_mask} ."
         )
 
         self.progress_update_queue.put_nowait({"id": 2, "message": "Cloze completion complete", "success": True})
@@ -261,21 +279,26 @@ class MUKALMA:
         fragmented_outputs = []
         outputs = []
         for cloze_response in cloze_responses:
-            # Take the the output with the 'blanks' filled. Take a slice of the output by removing the input prompt
-            # from it. Use a dialogue model to complete this output slice, in an attempt to make the reply open ended
-            knowledge_sent = cloze_response[len(message) + 1:-2] + "."
+            # Take the output with the 'blanks' filled. Take a slice of the output by removing the input prompt
+            # from it. Use a dialogue model to complete this output slice, in an attempt to make the reply open-ended
+            # From the cloze response, remove any trailing spaces or periods, and finally, ensure that the right
+            # stripped cloze response ends properly, with a space at the end to maintain the correct sentence form
+            # if the dialog model later generates a follow-up sentence
+            r_stripped_cloze_response = (cloze_response[len(message) + 1:]).rstrip(' .')
+            knowledge_sent = r_stripped_cloze_response + "." \
+                if r_stripped_cloze_response[-1] not in sent_end_chars else ""
 
             # We use two methods to generate the output. One sentence is a knowledge-grounded response. The second,
             # following sentence is a dialog-style response which follows from the first generated sentence
             # We need to keep track of this separation between the two sentences
             fragmented_output = [(knowledge_sent, dialog)
                                  for dialog in self.dialogue_model.predict(message, output_fragment=knowledge_sent)]
-            output = [kg + dg for (kg, dg) in fragmented_output]
+            output = [kg + (' ' if len(dg) > 0 and dg[0] != ' ' else '') + dg for (kg, dg) in fragmented_output]
 
             fragmented_outputs.extend(fragmented_output)
             outputs.extend(output)
 
-            print(f"[{self.TAG}]: generate_knowledge_based_response: OUTPUTS: \n{fragmented_output}")
+            print(f"[{self.TAG}]: Cloze Generated Responses \n{fragmented_output}")
 
         # Obtain the index of the best response, and lookup the best response string (complete and fragmented on the
         # basis of the method used to generate the string)
@@ -302,18 +325,14 @@ class MUKALMA:
     def find_relevant_response(self, message, cur_turn_knowledge, cur_turn_knowledge_tok):
         selected_question = message
 
-        # Matching Nouns
-        """
-        if match_nouns_from_set(message, self.knowledge_source_pos) == 0:
-            return selected_question, "", -1, -1
-        """
+        print(f"\n\n{'=' * 100}\n[{self.TAG}]: EXTRACTING KNOWLEDGE SPAN\n{'=' * 100}\n")
 
         # Intent Recognition
         intent = self.intentRecognizer.recognizeIntent(message)
-        print(f"[{self.TAG}]: find_relevant_response: Intent: {intent}")
+        print(f"[{self.TAG}]: Intent: {intent}")
         knowledge_sent, knowledge_start_index, knowledge_end_index = "", -1, -1
 
-        # Setting the question from the either the message (if the message was a question)
+        # Setting the question from either the message (if the message was a question)
         # Or generate a question from the statement
         if intent == "Statement":
             knowledge_questions = self.question_generation_model.generate_questions(message, "")
@@ -323,25 +342,27 @@ class MUKALMA:
 
         # Fetching answer from T5
         if knowledge_question is not None:
-            print(f"[{self.TAG}]: find_relevant_response: [Message-Question]: {knowledge_question}")
+            print(f"\n\n{'=' * 20}: QUESTION OBTAINED, ATTEMPT TO EXTRACT SPAN")
+            print(f"[{self.TAG}]: [Question]: {knowledge_question}")
             selected_question = knowledge_question
             knowledge_sent, knowledge_start_index, knowledge_end_index = \
                 self.cloze_model.get_answers(message, cur_turn_knowledge)
-            print(f"[{self.TAG}]: find_relevant_response: [CLOZE-Based]: Knowledge sent: {knowledge_sent}")
+            print(f"[{self.TAG}]: [CLOZE-Based]: Knowledge span extracted: "
+                  f"{knowledge_sent if len(knowledge_sent) != 0 else 'Not found'}")
 
         # If a knowledge_sent couldn't be found, find the most similar sentence instead
         if len(knowledge_sent) == 0:
-
+            print(f"\n\n{'=' * 20}: KNOWLEDGE SPAN COULDN'T BE EXTRACTED. Use fallback: Find most similar sentence")
             print(f"[{self.TAG}]: find_relevant_response: SENT TOK KNOWLEDGE: {cur_turn_knowledge_tok}")
-            print(f"\n\n[{self.TAG}]: find_relevant_response: SENT TOK KNOWLEDGE:\n{cur_turn_knowledge_tok[:4]}\n\n")
-            print("[{self.TAG}]: find_relevant_response: message:\n{message}")
+            print(f"[{self.TAG}]: find_relevant_response: message:\n{message}")
 
             knowledge_sents, knowledge_start_index, knowledge_end_index = \
                 self.sentence_model.get_most_similar_sentence(message, cur_turn_knowledge_tok), -1, -1
 
             if len(knowledge_sents) != 0:
                 # Pick the best matched sentence
-                # TODO: An additional layer of scoring can be added before selecting from the set of best matched sentences
+                # TODO: An additional layer of scoring can be added before selecting
+                #  from the set of best matched sentences
                 knowledge_sent = knowledge_sents[0]
                 # Generate a question from the message and the similar sentence
                 knowledge_questions = []
@@ -352,7 +373,8 @@ class MUKALMA:
                 # Finding all the questions for each noun we identify in the message
                 message_keyword = " ".join(message_nouns)
                 knowledge_questions.extend(
-                    self.question_generation_model.generate_questions(knowledge_sent, message_keyword))
+                    self.question_generation_model.generate_questions(knowledge_sent, message_keyword)
+                )
                 print(f"[{self.TAG}]: find_relevant_response: Questions Generated: {knowledge_questions}")
 
                 # Select the most relevant question from the list of generated questions
@@ -376,45 +398,64 @@ class MUKALMA:
         # End if
 
         # Logging and Return
-        print(
-            f"[{self.TAG}]: find_relevant_response: Response: {knowledge_sent} start span: {knowledge_start_index} end span: {knowledge_end_index}")
+        print(f"\n[{self.TAG}]: Extracted Knowledge Span: {knowledge_sent} using this question: {selected_question}")
         return selected_question, knowledge_sent, knowledge_start_index, knowledge_end_index
 
     def get_response(self, message):
+        print(f"\n\n\n\n{'=' * 100}\n[{self.TAG}]: START OF GET_RESPONSE\n{'=' * 100}\n")
+        print(f"[{self.TAG}]: Raw input received: {message}")
         message = clean_input(message)
+        print(f"[{self.TAG}]: Processed input: {message}\n\n")
 
         # Get a list of topics that may have been mentioned in the message
         # Add keywords from conversation history if they're relevant, and update the topic transition model
         topics = self.topic_transition_model.update_topic(message, self.__extract_topic(message))
 
-        print(f"[{self.TAG}]: get_response: MESSAGE KEYWORDS: {topics}")
+        print(f"[{self.TAG}]: Keywords extracted: {topics}")
 
         # If the message talks about a new topic...
         # Request Knowledge DB to fetch data relevant to the current message, update the db
         # and finally, return the most relevant document for this message
-        knowledge_article, cur_turn_knowledge, cur_turn_knowledge_tok = "", "", []
-        if len(topics) != 0:
-            cur_turn_knowledge_tok, knowledge_article = self.knowledge_db.fetch_topic_data(topics, message)
-            cur_turn_knowledge = ' '.join(cur_turn_knowledge_tok)
+        cur_turn_knowledge_tok, knowledge_article = self.knowledge_db.fetch_topic_data(topics, message)
 
-        ks_found = knowledge_article != ""
-        self.progress_update_queue.put_nowait({"id": 0, "message": f"Knowledge fetched from article {knowledge_article}"
-                                               if ks_found else "Knowledge source not found", "success": ks_found})
+        # If no matching articles could be found for the current turn keywords, try again using only the keywords
+        # extracted in this turn alone (without passthrough), if any
+        if len(cur_turn_knowledge_tok) == 0:
+            topics = self.topic_transition_model.report_topic_change()
+            cur_turn_knowledge_tok, knowledge_article = self.knowledge_db.fetch_topic_data(
+                topics, message
+            )
+            print(f"[{self.TAG}]: Knowledge Source not found, falling back to current message keywords: {topics}")
+
+        cur_turn_knowledge = ' '.join(cur_turn_knowledge_tok)
+
+        ks_found = len(cur_turn_knowledge_tok) != 0
+        self.progress_update_queue.put_nowait(
+            {
+                "id": 0,
+                "message": f"Knowledge fetched from article {knowledge_article}"
+                if ks_found
+                else "Knowledge source not found",
+                "success": ks_found
+            }
+        )
 
         # Retrieve the relevant knowledge sentence from the knowledge source
-        selected_question, knowledge_sent, knowledge_start_index, knowledge_end_index = "", "", 0, 0
-        if len(cur_turn_knowledge_tok) != 0:
-            selected_question, knowledge_sent, knowledge_start_index, knowledge_end_index = self.find_relevant_response(
-                message, cur_turn_knowledge, cur_turn_knowledge_tok)
+        selected_question, knowledge_sent, knowledge_start_index, knowledge_end_index = \
+            (self.find_relevant_response(
+                message, cur_turn_knowledge, cur_turn_knowledge_tok
+            )) if ks_found else ("", "", 0, 0)
 
         self.progress_update_queue.put_nowait(
-            {"id": 1, "message": "Knowledge span extracted" if ks_found else "Knowledge source not found",
-             "success": ks_found}
+            {
+                "id": 1, "message": "Knowledge span extracted" if ks_found else "Knowledge source not found",
+                "success": ks_found
+            }
         )
 
         # Condition on the knowledge sentence, and generate knowledge-grounded dialog
         best_response, knowledge_grounded_responses = \
-            self.generate_knowledge_based_response(message, knowledge_sent)
+            self.generate_knowledge_based_response(selected_question, knowledge_sent)
 
         # Cleaning the responses
         best_response = clean_answer(best_response)
@@ -422,7 +463,8 @@ class MUKALMA:
             knowledge_grounded_responses[i] = clean_answer(knowledge_grounded_responses[i])
 
         # Logging and Return
-        print(f"[{self.TAG}]: get_response: GENERATED RESPONSE: {knowledge_grounded_responses}")
+        print(f"\n\n[{self.TAG}]: FINAL RESPONSES: {knowledge_grounded_responses}")
+
         response = {
             "knowledge_sent": knowledge_sent,
             "response": best_response,
@@ -438,5 +480,5 @@ class MUKALMA:
         return response
 
     def exit(self):
-        print(f"\n\n[{self.TAG}]: Quitting MUKALMA")
+        print(f"\n\n\n\n[{self.TAG}]: Quitting MUKALMA")
         self.knowledge_db.close()

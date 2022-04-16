@@ -115,7 +115,7 @@ class T5ClozeController:
         results = []
         for output in outputs:
             result = self.fill_masks(text, output)
-            print(f"Result: {result}")
+            print(f"Cloze Completion Result: {result}")
             results.append(result)
 
         return results

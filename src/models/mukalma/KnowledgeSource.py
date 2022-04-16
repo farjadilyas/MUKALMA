@@ -167,6 +167,9 @@ class KnowledgeSource:
                 self.fetch_article_data(article)
 
     def fetch_topic_data(self, topics, message):
+        if len(topics) == 0:
+            return [], ""
+
         topic_search_str = ' '.join(topics)
 
         print(f"Fetching data for {topic_search_str}")
@@ -187,7 +190,7 @@ class KnowledgeSource:
 
         # Obtain the cosine similarity of the message with the relevant articles for the current topic
         if len(docs_content) == 0:
-            return []
+            return [], ""
             
         doc_c_sim = calculate_tfidf_similarity(message, docs_content)
 
