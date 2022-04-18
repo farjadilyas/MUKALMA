@@ -14,7 +14,6 @@ from flask import request
 from flask import jsonify
 
 from .APIModel import APIModel
-import time
 
 # To register clean-up actions when exiting the Flask App
 import atexit
@@ -52,11 +51,7 @@ atexit.register(cleanup)
 def get_reply():
     _json = request.json
     _message = _json['message']
-
-    s1 = time.time()
     reply = test_model.reply(_message)
-    print("\n\n--- %s seconds ---" % (time.time() - s1))
-
     print(f"Returning the response: {jsonify(reply)}")
     return jsonify(reply), 200
 

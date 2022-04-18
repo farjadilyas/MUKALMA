@@ -27,7 +27,7 @@ from .nlu.svo_utils import extract_named_entities, get_lemmatizer
 import dateparser as dp
 from word2number import w2n
 import re
-from time import localtime, strftime
+from time import localtime, strftime, time
 
 from .KnowledgeSource import KnowledgeSource
 
@@ -429,6 +429,7 @@ class MUKALMA:
         return selected_question, knowledge_sent, knowledge_start_index, knowledge_end_index
 
     def get_response(self, message):
+        ts = time()
         print(f"\n\n\n\n{'=' * 100}\n[{self.TAG}]: START OF GET_RESPONSE\n{'=' * 100}\n")
         print(f"[{self.TAG}]: Raw input received: {message}")
         message = clean_input(message)
@@ -512,6 +513,8 @@ class MUKALMA:
             "success": True
         }
         self.progress_update_queue.put_nowait(response)
+
+        print("\n\n--- %s seconds ---" % (time() - ts))
         return response
 
     def exit(self):
