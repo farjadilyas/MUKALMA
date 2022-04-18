@@ -74,3 +74,16 @@ def get_update():
         return jsonify(update), status
 
 # End of route
+
+@app.route('/clear_context', methods=['GET'])
+def clear_context():
+    print ("Received Request for Clearing context")
+    status = 404
+    try:
+        test_model.clear_context()
+        status = 200
+        return jsonify({"status": "Success"}), status
+    except Empty:
+        status = 404
+    finally:
+        return jsonify({"status": "Error"}), status

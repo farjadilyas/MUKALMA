@@ -11,6 +11,14 @@ export const sendMessage = (message) => async () => {
     }
 }
 
+export const clearContext = () => async () => {
+    try {
+        const data = await api.clearContext()
+    } catch (error) {
+        console.log(error)
+    }
+}
+
 export const waitForResponse = (
         setMessages, 
         setSource,

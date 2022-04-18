@@ -141,5 +141,14 @@ class TopicTransitionModel:
         self.prev_keywords = self.c_keywords
         self.pass_through = []
         return self.c_keywords
+
+    # End of function
+
+    def clear_topic_keywords(self):
+        self.prev_keywords = []
+        self.pass_through = []
+        self.c_keywords = []
+
+    # End of function
     
 # End of class
