@@ -5,7 +5,6 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import CircularProgress from '@mui/material/CircularProgress';
-import { topicSelect } from '../../actions/message';
 import SearchBar from "material-ui-search-bar";
 import Chip from '@mui/material/Chip';
 import { Grid } from "@material-ui/core";
@@ -17,7 +16,6 @@ const Topic = ({ topic, setTopic, topics, setTopics, setSource, setMessages }) =
     // Handling Change
     const handleChange = (event) => {
         setTopic(topic => event.target.value)
-        dispatch(topicSelect(event.target.value, setSource, setMessages));
     };
 
     // Search Bar
@@ -27,7 +25,6 @@ const Topic = ({ topic, setTopic, topics, setTopics, setSource, setMessages }) =
     const [progress, setProgress] = useState("hidden")
 
     const onSearch = () => {
-        dispatch(topicSelect(search, setSource, setMessages, setProgress));
         setProgress("visible")
     }
 

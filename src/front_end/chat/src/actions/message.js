@@ -122,37 +122,3 @@ export const waitForResponse = (
         console.log(error)
     }
 }
-
-export const fetchSource = (setSource) => async () => {
-    try {
-        const data = await api.fetchSource()
-        setSource(data.data.response)
-    } catch (error) {
-        console.log(error)
-    }
-}
-
-export const fetchTopics = (setTopic, setTopics) => async () => {
-    try {
-        const data = await api.fetchTopics()
-        setTopic(data.data.current_topic)
-        setTopics(data.data.topics)
-    } catch (error) {
-        console.log(error)
-    }
-}
-
-export const topicSelect = (topic, setSource, setMessages, setProgress) => async (dispatch) => {
-    try {
-        const data = await api.changeTopic({"topic": topic});
-        if (data.status === 200) {
-            dispatch(fetchSource(setSource))
-            setMessages(initialState)
-            setProgress("hidden")
-        } else {
-            throw Error
-        }
-    } catch (error) {
-        console.log(error)
-    }
-}

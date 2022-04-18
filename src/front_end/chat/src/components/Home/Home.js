@@ -40,12 +40,6 @@ const Home = () => {
     // Source
     const [source, setSource] = useState(values.DUMMY_SOURCE);
 
-    // Using Effect to load initial Data
-    useEffect(() => {
-        dispatch(fetchSource(setSource));
-        dispatch(fetchTopics(setTopic, setTopics))
-    }, []);
-
     // Using Effect to start voice if the Speech Text changes
     useEffect(() => {
         setPlayAudio(true);
