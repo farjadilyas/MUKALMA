@@ -473,7 +473,8 @@ class MUKALMA:
 
         # Condition on the knowledge sentence, and generate knowledge-grounded dialog
         best_response, knowledge_grounded_responses = \
-            self.generate_knowledge_based_response(selected_question, knowledge_sent)
+            self.generate_knowledge_based_response(selected_question if selected_question != "" else message,
+                                                   knowledge_sent)
 
         # Cleaning the responses
         best_response = clean_answer(best_response)
