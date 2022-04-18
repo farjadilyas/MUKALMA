@@ -1,13 +1,8 @@
 import * as React from 'react';
 
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
+import { Tabs, Tab, Box } from '@mui/material'
 
-import Source from '../Source/Source'
-import Topic from '../Topic/Topic'
-import Responses from '../Responses/Responses'
-import InformationRetrieval from '../InformationRetrieval/InformationRetrieval';
+import { Source, Topics, InformationRetrieval, Responses } from '../../components'
 
 import './TabContainer.css'
 import { IconButton } from '@mui/material';
@@ -17,11 +12,7 @@ const TabContainer = ({
         source, 
         setSource, 
         spanSelected, 
-        topic, 
-        setTopic, 
         topics, 
-        setTopics, 
-        setMessages, 
         responses,
         selectedTopic, 
         value,
@@ -38,7 +29,7 @@ const TabContainer = ({
         setValue(-1);
     }
 
-    const labels = ["Knowledge Source", "Candidate Responses", "Topic Selection", "Information Retrieval"]
+    const labels = ["Knowledge Source", "Candidate Responses", "Topic Transitions", "Information Retrieval"]
 
     // Function to dynamically select the component to render based on the value of the tab
     // container
@@ -53,14 +44,7 @@ const TabContainer = ({
             case 1:
                 return <Responses responses={responses}/>
             case 2:
-                return <Topic 
-                        topic={topic} 
-                        setTopic={setTopic} 
-                        topics={topics} 
-                        setTopics={setTopics} 
-                        setSource={setSource}
-                        setMessages={setMessages} 
-                    />
+                return <Topics topics={topics}/>
             case 3:
                 return <InformationRetrieval selectedTopic={selectedTopic}/>
             default:

@@ -510,7 +510,11 @@ class MUKALMA:
             "k_end_index": knowledge_end_index,
             "id": 3,
             "message": "Response generated",
-            "success": True
+            "success": True,
+            "topic": {
+                "knowledge_article": knowledge_article,
+                "keywords": topics
+            }
         }
         self.progress_update_queue.put_nowait(response)
 

@@ -29,6 +29,7 @@
     "react-scripts": "4.0.3",
     "react-speech": "^1.0.2",
     "react-speech-recognition": "^3.9.0",
+    "react-vertical-timeline-component": "^3.5.2",
     "redux": "^4.1.1",
     "redux-thunk": "^2.3.0",
     "use-sound": "^4.0.1",

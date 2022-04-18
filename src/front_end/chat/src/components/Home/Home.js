@@ -8,7 +8,6 @@ import { Chatbox, TabContainer } from '../../components';
 import Speech from './Speech/Speech';
 
 import { initialState } from "../Chatbox/state";
-import { fetchSource, fetchTopics } from "../../actions/message";
 
 import './Home.css';
 
@@ -28,8 +27,10 @@ const Home = () => {
     const [value, setValue] = React.useState(-1);
 
     // Topic
-    const [topic, setTopic] = useState('');
-    const [topics, setTopics] = useState([]);
+    const [topics, setTopics] = useState([{ 
+        "knowledge_article": "Multan", 
+        "keywords": ["multan", "city", "pakistan"] 
+    }]);
     const [spanSelected, setSpanSelected] = useState(/Fusce placerat consequat elementum./g)
     const [selectedTopic, setSelectedTopic] = useState('Multan')
 
@@ -61,6 +62,7 @@ const Home = () => {
                         setSpanSelected={setSpanSelected}
                         setResponses={setResponses}
                         setSpeechText={setSpeechText}
+                        setTopics={setTopics}
                     />
                 </Grid>
                 <Grid item xs={12} sm={ value < 0 ? 1 : 6 } className={"gridItem"} >
@@ -72,15 +74,13 @@ const Home = () => {
                             source={source} 
                             setSource={setSource} 
                             spanSelected={spanSelected}
-                            topic={topic}
-                            setTopic={setTopic}
                             topics={topics}
                             setTopics={setTopics}
                             setMessages={setMessages}
                             responses={responses}
                             selectedTopic={selectedTopic}
                             value={value}
-                            setValue={setValue}
+                            setValue={setValue} 
                         />
                     </motion.div>
                 </Grid>
