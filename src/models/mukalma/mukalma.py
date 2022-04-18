@@ -158,6 +158,15 @@ def clean_input(s):
 
 
 class MUKALMA:
+    __DEFAULT_FAILURE_RESPONSES = [
+        "Sorry, I don't understand",
+        "I didn't get that, can you clarify?",
+        "Pardon me, I don't know what you mean",
+        "Could you elaborate? I didn't quite get what you meant there",
+        "I'm sorry, could you please clarify?",
+        "Sorry, I don't know about that"
+    ]
+
     def __init__(self, params, progress_update_queue):
         self.TAG = 'MUKALMA'
         self.progress_update_queue = progress_update_queue
@@ -205,6 +214,15 @@ class MUKALMA:
 
         # Keeps track of the topic that is currently being talked about
         self.topic_str = ""
+        self.default_failure_response_id = -1
+
+    def get_default_failure_response(self):
+        print(f"DEBUG: {self.default_failure_response_id} {len(MUKALMA.__DEFAULT_FAILURE_RESPONSES)}")
+        if self.default_failure_response_id == len(MUKALMA.__DEFAULT_FAILURE_RESPONSES) - 1:
+            self.default_failure_response_id = 0
+        else:
+            self.default_failure_response_id += 1
+        return MUKALMA.__DEFAULT_FAILURE_RESPONSES[self.default_failure_response_id]
 
     def set_knowledge_source(self, knowledge_source):
         pass
@@ -464,6 +482,13 @@ class MUKALMA:
 
         # Logging and Return
         print(f"\n\n[{self.TAG}]: FINAL RESPONSES: {knowledge_grounded_responses}")
+
+        # Use default failure response if the best response generated up till now does not contain a word consisting
+        # of a minimum of 2 characters
+        if re.search(r'[a-zA-z]{2,}', best_response) is None:
+            best_response = self.get_default_failure_response()
+            knowledge_grounded_responses.insert(0, best_response)
+            print(f"RESPONSE INVALID - no word found: Using default response: {best_response}")
 
         response = {
             "knowledge_sent": knowledge_sent,
