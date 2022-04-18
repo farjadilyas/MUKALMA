@@ -14,7 +14,9 @@ import useSound from 'use-sound';
 
 import { audio } from '../../constants'
 import './styles.css';
+
 import ResponseProgress from './ResponseProgress/ResponseProgress';
+import { updatePadding } from './ResponseProgress/padding'
 
 // Scrolling to bottom function
 export const scrollToBottom = () => {
@@ -22,6 +24,8 @@ export const scrollToBottom = () => {
     endOfChat.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
 }
 
+
+// Main Chatbox Component
 const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setResponses, setSpeechText }) => {
     // Dispatcher
     const dispatch = useDispatch();
@@ -35,9 +39,7 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
     })
 
     // Stepper Padding Size code
-    const paddingValues = ['50px', '10px']
-    const [paddingBottom, setPaddingBottom] = useState(0)
-    var numMessages = 1;
+    const [paddingBottom, setPaddingBottom] = useState(0);
 
     // Progress
     const [showProgress, setShowProgress] = useState(false);
@@ -59,6 +61,13 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
     useEffect(() => {
         setMessage(transcript);
     }, [transcript])
+
+    // Use Effects
+    // When paddingBottom changes to calculate new padding
+    // for progress-container
+    useEffect(() => {
+        updatePadding(paddingBottom);
+    }, [paddingBottom])
     
     // Function to handle onSubmitMessage
     const onSubmitMessage = (message) => {
@@ -144,7 +153,7 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
                         :
                         <></>
                     }
-                    <div id="end-of-chat" style={{ paddingBottom: paddingValues[paddingBottom] }}/>
+                    <div id="end-of-chat" />
                 </div>
             </div>
             <div className='msg-footer'>
