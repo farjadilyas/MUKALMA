@@ -144,12 +144,21 @@ def clean_input(s):
         if period is None:
             period = 1
         if past is not None and period is not None and unit is not None:
-            replace = str(2022 + (-1 if past else 1) * period * unit)
+            replace = str(cur_year + (-1 if past else 1) * period * unit)
+            if int(replace[:2]) < 20:
+                tens = int(replace[2:])
+                if 0 < tens <= 40:
+                    century_prefix = "early"
+                elif 70 < tens <= 100:
+                    century_prefix = "late"
+                else:
+                    century_prefix = "mid"
+                replace = f"{century_prefix} {replace[0:2] + '00s'}"
 
         # Change prefix and replacement text if a range of time is mentioned instead of a specific year
         if replace is not None and year_range:
             prefix = "between "
-            replace = f"{replace} - {cur_year}" if int(replace) < cur_year else f"{cur_year} - {replace}"
+            replace = f"{replace} and {cur_year}" if int(replace) < cur_year else f"{cur_year} and {replace}"
 
         # Replace the named entity in the message (p_msg) with the replacement text sent as the second parameter
         p_msg = re.sub(ne[0], prefix + replace, p_msg)
