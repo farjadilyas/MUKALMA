@@ -26,14 +26,24 @@ export const scrollToBottom = () => {
 
 
 // Main Chatbox Component
-const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setResponses, setSpeechText }) => {
+const Chatbox = ({ 
+    messages, 
+    setMessages, 
+    setSource, 
+    setSpanSelected, 
+    setResponses, 
+    setSpeechText, 
+    setTopics
+}) => {
+    
     // Dispatcher
     const dispatch = useDispatch();
 
     // State
     const [message, setMessage] = useState('');
+    
+    // Resizing the window to fit the screen
     const [width, setWidth] = useState(window.innerWidth)
-
     window.addEventListener('resize', function(event) {
         setWidth(window.innerWidth)
     })
@@ -102,7 +112,8 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
                 setShowProgress,
                 setPaddingBottom,
                 setResponseProgressMessage,
-                setActiveStep
+                setActiveStep,
+                setTopics
             ));
         }, 500)
     }
@@ -118,6 +129,7 @@ const Chatbox = ({ messages, setMessages, setSource, setSpanSelected, setRespons
         setMessage('');
     }
 
+    // UseEffect to scroll to the end of message
     useEffect(() => {
         scrollToBottom(messages.length);
     }, [messages])

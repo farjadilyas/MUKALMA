@@ -3,8 +3,6 @@ import { agent, initialState } from '../components/Chatbox/state'
 import { scrollToHighlight } from '../components/Source/scroll'
 import { scrollToBottom } from '../components/Chatbox/Chatbox'
 
-// Function
-
 export const sendMessage = (message) => async () => {
     try {
         const data = await api.sendMessage(message)
@@ -23,7 +21,8 @@ export const waitForResponse = (
         setShowProgress,
         setPaddingBottom,
         setResponseProgressMessage,
-        setActiveStep
+        setActiveStep,
+        setTopics
     ) => async () => {
     try {
 
@@ -45,6 +44,11 @@ export const waitForResponse = (
                 "id": "0",
                 "sender": agent
             }]);
+
+            setTopics(topics => [...topics, {
+                "knowledge_article": "Karachi",
+                "keywords": ["karachi", "city", "pakistan", "beach"]
+            }])
             
             // setSpeechText("Sorry! I can't answer your question right now! Please try again later");
             setPaddingBottom(0);
@@ -53,13 +57,9 @@ export const waitForResponse = (
         }, 3000);
         // Debugging Ends
 
-        // {
-        //     id,
-        //     message:
-        //     success:
-        // }
+        // Production Code Starts
 
-        // First call for knowledge selection
+        // // First call for knowledge selection
         // for (let i = 0; i < 3; ++i) {
         //     var data = await api.waitForResponse()
         //     setResponseProgressMessage(data.data.message)
@@ -85,7 +85,6 @@ export const waitForResponse = (
         //     var source = data.data.knowledge_source;
         //     setSource(source);
 
-
         //     // Adding Multiple messages based on the full stops
         //     // Each sentence is uttered as a separate text message
         //     var i
@@ -99,6 +98,12 @@ export const waitForResponse = (
         //             }]);
         //         }
         //     }
+
+        //     // Setting Topics and keywords
+        //     setTopics(topics => [...topics, {
+        //         "knowledge_article": data.data.topic.knowledge_article,
+        //         "keywords": data.data.topic.keywords
+        //     }])
 
         //     // Setting Span of text by Q/A
         //     var span = data.data.knowledge_sent
@@ -118,6 +123,8 @@ export const waitForResponse = (
         //     // Setting Audio
         //     setSpeechText(result);
         // }, 1000)
+
+        // Production Code Ends
     } catch (error) {
         console.log(error)
     }
