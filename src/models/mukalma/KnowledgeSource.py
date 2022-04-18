@@ -44,6 +44,25 @@ from os.path import exists
 KS_FILENAME = 'knowledge_source.pkl'
 
 
+def merge_db(db1_filename, db2_filename, target_filename):
+    target_db = None
+    db1 = read_object(db1_filename)
+    db2 = read_object(db2_filename)
+
+    if db1 is None and db2 is not None:
+        target_db = db2
+    elif db1 is not None and db2 is None:
+        target_db = db1
+    elif db1 is not None and db2 is not None:
+        target_db = db1.copy()
+        target_db.update(db2)
+
+    if target_db is not None:
+        save_object(target_db, target_filename)
+        return True
+    return False
+
+
 def save_object(obj, filename):
     with open(filename, 'wb') as output:
         pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
@@ -285,3 +304,16 @@ class KnowledgeSource:
         if not self.persist:
             return
         save_object(self.article_db, self.persist_location)
+
+
+if __name__ == '__main__':
+    uin = input(f"{'=' * 100}\nKnowledgeSource save file merger\n{'=' * 100}\n\nContinue (y/n)?")
+    if uin.strip().lower() == 'n':
+        print("Quitting...")
+        exit()
+
+    db1_fn = input('Enter db1 file path and name (can be relative): ')
+    db2_fn = input('Enter db2 file path: ')
+    target_db_fn = input('Enter target db file path: ')
+    merge_result = merge_db(db1_fn, db2_fn, target_db_fn)
+    print("Merge", "successful" if merge_result else "failed. Check the source files and try again.")
