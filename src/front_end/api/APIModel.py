@@ -11,7 +11,6 @@
 from ...models.mukalma.mukalma import MUKALMA
 from threading import Thread
 
-
 # Class Definition
 class APIModel:
     def __init__(self, progress_update_queue):
@@ -74,3 +73,6 @@ class APIModel:
 
     def exit(self):
         self.model.exit()
+
+    def clear_context(self):
+        self.model.clear_context()

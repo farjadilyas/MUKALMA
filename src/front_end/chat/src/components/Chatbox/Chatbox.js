@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux';
 
-import { sendMessage, waitForResponse } from '../../actions/message'
-import { sender } from './state';
+import { sendMessage, waitForResponse, clearContext } from '../../actions/message'
+import { initialState, sender } from './state';
 
 import MessageList from './MessageList/MessageList'
 
-import { Mic, MicNone } from '@material-ui/icons';
+import { Mic, MicNone, DeleteOutlineRounded } from '@material-ui/icons';
 import { IconButton } from '@mui/material';
 
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
@@ -148,6 +148,18 @@ const Chatbox = ({
         }
     }, [listening])
 
+    // Clear reset state once pressed clear
+    const clearState = () => {
+
+        // Clearing all the important state variables
+        setMessages(initialState);
+        setPaddingBottom(0);
+        setTopics([]);
+
+        // Dispatching a network request for clearing context
+        dispatch(clearContext());
+    }
+
     // Building HTML
     return (
         <div className='chat-box'>
@@ -179,6 +191,9 @@ const Chatbox = ({
                             onChange={(event) => setMessage(event.target.value)}
                             required={true}
                         />
+                        <IconButton onClick={clearState} style={{ marginRight: "10px" }}>
+                            <DeleteOutlineRounded />
+                        </IconButton>
                         <IconButton onClick={toggleListening} style={{ marginRight: "10px" }}>
                             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                 {listening ? (

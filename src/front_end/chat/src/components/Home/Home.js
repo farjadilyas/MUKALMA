@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-import { useDispatch } from 'react-redux'
 import { Grid } from "@material-ui/core";
 import { motion } from 'framer-motion';
 
@@ -14,8 +13,6 @@ import './Home.css';
 import { values } from '../../constants'
 
 const Home = () => {
-    // Defining dispatcher
-    const dispatch = useDispatch();
 
     // Messages
     const [messages, setMessages] = useState(initialState)

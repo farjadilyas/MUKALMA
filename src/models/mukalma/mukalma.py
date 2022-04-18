@@ -520,7 +520,19 @@ class MUKALMA:
 
         print("\n\n--- %s seconds ---" % (time() - ts))
         return response
+    # End of function
 
+    # Function to exit Mukalma and store the knowledge_db
+    # to file
     def exit(self):
         print(f"\n\n\n\n[{self.TAG}]: Quitting MUKALMA")
         self.knowledge_db.close()
+    
+    # End of function
+
+    # Function to clear context keywords
+    def clear_context(self):
+        print(f"\n[{self.TAG}]: Clearing context!")
+        self.topic_transition_model.clear_topic_keywords()
+
+# End of class
