@@ -29,7 +29,7 @@ pip install -r requirements.txt
 
 MUKALMA has model size presets to achieve a tradeoff between model size and performance. It utilizes sub-models of different sizes to achieve this tradeoff. MUKALMA will automatically download any models that are missing from the ```models``` folder at the root of this repository.
 
-The following table depicts the presets available for MUKALMA, and their accompanying model sizes. The presets can be customized in ```src/front_end/APIModel.py```.
+The following table depicts the presets available for MUKALMA, and their accompanying model sizes. The presets can be customized in ```src/api/APIModel.py```.
 
 
 | MUKALMA Preset | Model Size |
@@ -46,7 +46,7 @@ The following table depicts the presets available for MUKALMA, and their accompa
 Note: Ensure you have selected your desired preset for MUKALMA's model size
 
 ```sh
-cd src/front_end/api
+cd src/api
 set FLASK_APP=app.py
 flask run
 ```
@@ -54,7 +54,7 @@ flask run
 ### Running the sample frontend
 
 ```sh
-cd src/front_end/chat
+cd src/front_end
 npm install
 npm start
 ```

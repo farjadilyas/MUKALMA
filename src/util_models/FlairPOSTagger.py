@@ -17,7 +17,7 @@ from flair.data import Sentence
 from flair.models import SequenceTagger
 
 # Change the cache directory for Flair models to one within this project's model directory
-flair.cache_root = Path("../../../models/.flair")
+flair.cache_root = Path("../../models/.flair")
 console = Console(record=True)
 
 
