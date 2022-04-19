@@ -65,4 +65,9 @@ export default makeStyles((theme) => ({
     right: {
         display: 'flex',
     },
+    titleContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
 }));
