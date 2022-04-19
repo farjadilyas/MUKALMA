@@ -13,12 +13,11 @@
   around a given topic for multiple turns.
 
   Additionally, in the absence of the network connectivity required to build this cache, this
-  cache can be extended with a persistance mechanism to use a 'hot cache' for subsequent starts.
+  cache can be extended with a persistence mechanism to use a 'hot cache' for subsequent starts.
 
   @Author: Muhammad Farjad Ilyas
   @Date: 22nd March 2022
 """
-
 
 # Import for scraping data off the web
 import requests
@@ -41,7 +40,8 @@ from itertools import islice
 import pickle
 from os.path import exists
 
-KS_FILENAME = 'knowledge_source.pkl'
+SINGLE_KS_FILENAME = 'knowledge_source.pkl'
+MULTI_KS_FILENAME = 'multi_knowledge_source.pkl'
 
 
 def merge_db(db1_filename, db2_filename, target_filename):
@@ -85,12 +85,16 @@ def chunk(it, size):
     return iter(lambda: tuple(islice(it, size)), ())
 
 
-def extract_paras_and_heads(soup, doc_title, chunk_size=8):
+def extract_paras_and_heads(doc_title, chunk_size=8):
     """
       Returns the (heading, paragraphs) pairs from the page parsed by soup
       Placed a minimum number of sentence limit on paragraph length to ignore insignificant paragraphs
       which skew the results
     """
+
+    # Fetch and scrape the contents of the wikipedia page corresponding to the title
+    page = requests.get(f"https://en.wikipedia.org/wiki/{doc_title}")
+    soup = BeautifulSoup(page.content, 'lxml')
 
     # Extract paragraph text, ignoring any empty class paragraphs
     # Fetch the intro paragraph separately since it isn't associated with a heading
@@ -145,10 +149,17 @@ def calculate_tfidf_similarity(base_document, documents):
 
 class KnowledgeSource:
     def __init__(self, model=None, num_results=3, persist=True, persist_path='', use_hot_cache=True):
+        self.use_multi_source = num_results > 1
+        if self.use_multi_source:
+            self.ks_filename = MULTI_KS_FILENAME
+        else:
+            self.ks_filename = SINGLE_KS_FILENAME
+
         # Initialize knowledge source, optionally from a previously persisted file
         # For each cached article, this dictionary stores the article's overall content, its mini paragraphs, and the
         # precomputed embeddings corresponding to the mini paragraphs
-        persist_location = persist_path + ('/' if persist_path != '' and persist_path[-1] != '/' else '') + KS_FILENAME
+        persist_location = persist_path + \
+                           ('/' if persist_path != '' and persist_path[-1] != '/' else '') + self.ks_filename
         ks = read_object(persist_location) if use_hot_cache else None
         if ks is None:
             print("CREATING NEW KNOWLEDGE SOURCE")
@@ -183,22 +194,94 @@ class KnowledgeSource:
             # For every article corresponding to the topic, fetch and save its overall content and embeddings
             # corresponding to the mini paragraphs of the article
             for article in articles:
-                self.fetch_article_data(article)
+                if self.use_multi_source:
+                    self.__fetch_multi_source_article_data(article)
+                else:
+                    self.__fetch_single_source_article_data(article)
 
-    def fetch_topic_data(self, topics, message):
+    def fetch_relevant_articles(self, topics):
         if len(topics) == 0:
-            return [], ""
+            return []
 
         topic_search_str = ' '.join(topics)
 
-        print(f"Fetching data for {topic_search_str}")
-        articles = wikipedia.search(topic_search_str, results=self.num_results)
+        print(f"Fetching data for '{topic_search_str}'")
+        try:
+            articles = wikipedia.search(topic_search_str, results=self.num_results)
+        except:
+            articles = []
         print(f"Using the following relevant articles: {articles}")
+
+        return articles
+
+    def fetch_topic_data(self, topics, message):
+        selected_para_tok, selected_article_title = self.__fetch_multi_source_topic_data(topics, message) \
+            if self.use_multi_source else self.__fetch_single_source_topic_data(topics, message)
+        print(f"======= SELECTED PARAGRAPH:\n{selected_para_tok}")
+        return selected_para_tok, selected_article_title
+
+    def __fetch_multi_source_topic_data(self, topics, message):
+        articles = self.fetch_relevant_articles(topics)
+
+        if len(articles) == 0:
+            return [], ""
+
+        topic_paras = []    # Mini paragraphs comprising all mini paragraphs of each article relevant to the topic
+        for article in articles:
+            article_paras = self.__fetch_multi_source_article_data(article)
+
+            if article_paras is not None:
+                topic_paras.extend(article_paras)
+
+        if len(topic_paras) == 0:
+            return [], ""
+
+        # Once the topic paras have been accumulated, the embeddings for them, and the most similar para can be found
+        topic_paras_embeddings = self.sentence_model.encode(topic_paras)
+
+        # Encode the input message, and use the topic para embeddings to calculate cosine similarity
+        # The resulting scores can be used to find the most similar paragraph in all articles relevant to the topic
+        para_c_sim = cosine_similarity(self.sentence_model.encode([message]), topic_paras_embeddings).flatten()
+        selected_para_id = para_c_sim.argmax()
+
+        return nltk.tokenize.sent_tokenize(topic_paras[selected_para_id]), articles[0]
+
+    def __fetch_multi_source_article_data(self, title):
+        article_paras = self.article_db.get(title, None)
+        if article_paras is not None:
+            print(f"Topic '{title}' has already been cached")
+        else:
+            print(f"Topic '{title}' has not been cached, fetching and building...")
+            article_data = extract_paras_and_heads(title, chunk_size=3)
+
+            if article_data is not None:
+                heads, article_paras = article_data
+                # Obtained mini docs from the article data, and filter out paragraphs that are too short
+                processed_paras = []
+                for i in range(len(article_paras)):
+                    para_tok = nltk.tokenize.sent_tokenize(article_paras[i])
+                    if len(para_tok) <= 1:
+                        continue
+                    processed_paras.append(article_paras[i])
+                article_paras = processed_paras
+
+                # Cache article paras
+                self.article_db[title] = article_paras
+            else:
+                print(f"Data for '{title}' could not be parsed, ignoring this article")
+
+        return article_paras
+
+    def __fetch_single_source_topic_data(self, topics, message):
+        articles = self.fetch_relevant_articles(topics)
+
+        if articles is None or len(articles) == 0:
+            return [], ""
 
         docs_content = []
         articles_data = []
         for article in articles:
-            article_data = self.fetch_article_data(article)
+            article_data = self.__fetch_single_source_article_data(article)
 
             # Ignore article if its data couldn't be scraped
             if article_data is None:
@@ -210,7 +293,7 @@ class KnowledgeSource:
         # Obtain the cosine similarity of the message with the relevant articles for the current topic
         if len(docs_content) == 0:
             return [], ""
-            
+
         doc_c_sim = calculate_tfidf_similarity(message, docs_content)
 
         # Select the most similar article
@@ -225,12 +308,10 @@ class KnowledgeSource:
         # Use this with the pre-calculated embeddings for the paragraphs in the article to calculate cosine similarity
         para_c_sim = cosine_similarity(self.sentence_model.encode([message]), mini_doc_embeddings).flatten()
         selected_para_id = para_c_sim.argmax()
-        print(f"SELECTED PARA ID: {selected_para_id}, {len(para_c_sim)}")
-        print(f"======= SELECTED PARAGRAPH:\n{mini_docs[selected_para_id]}")
 
         return mini_docs[selected_para_id], articles[selected_article_id]
 
-    def fetch_article_data(self, title):
+    def __fetch_single_source_article_data(self, title):
         article_db_entry = self.article_db.get(title, None)
         if article_db_entry is not None:
             print(f"Topic '{title}' has already been cached")
@@ -238,11 +319,7 @@ class KnowledgeSource:
 
         print(f"Topic '{title}' has not been cached, fetching and building...")
 
-        # Fetch and scrape the contents of the wikipedia page corresponding to the title
-        page = requests.get(f"https://en.wikipedia.org/wiki/{title}")
-        soup = BeautifulSoup(page.content, 'lxml')
-
-        article_data = extract_paras_and_heads(soup, title, chunk_size=3)
+        article_data = extract_paras_and_heads(title, chunk_size=3)
 
         # If no paragraphs could be retrieved, this article is useless
         if article_data is None:
@@ -253,13 +330,11 @@ class KnowledgeSource:
         # Use the heads, paras pairs (mini-documents) to calculate TF-IDF embeddings...
         # for the set of mini-documents of the article corresponding to title
         # These embeddings can be used to find which mini_doc is most similar to a given document
-        # TODO: The heading of the document MAY BE appended before every sentence so that...
         # the absence of the heading in a sentence doesn't make it irrelevant
 
         # Save tokenized paragraph sentences for QA, and process the paragraph text for calculating embeddings
         content = ""
         mini_docs = []
-        processed_paras = []
         for i in range(len(paras)):
             para_tok = nltk.tokenize.sent_tokenize(paras[i])
             if len(para_tok) <= 1:
@@ -268,22 +343,10 @@ class KnowledgeSource:
             # Accumulate the total content of the article
             content = f"{content} {paras[i]}"
 
-            # Append the heading corresponding to the paragraph before every sentence in the paragraph
-            # Replace the paragraph with this processed paragraph
-            # This processed paragraph will be used to calculate the TF-IDF embeddings
-            para_head = heads[i] if i < len(heads) else ""
-            processed_para = ""
-            for para_sent in para_tok:
-                processed_para = f"{processed_para} {para_head} {para_sent}"
-            # paras[i] = processed_para
-            processed_paras.append(paras[i])
-
             # Save the tokenized sentences for this paragraph, NOTE: these use the original sentences
             # If this paragraph gets selected as the most relevant one...
             # Then this list of tokenized sentences will be used for question answering
             mini_docs.append(para_tok)
-
-        paras = processed_paras
 
         # Calculate mini_doc embeddings using the processed paragraphs
         mini_doc_embeddings = self.sentence_model.encode(paras)

@@ -203,7 +203,7 @@ class MUKALMA:
         self.tagger = FlairPOSTagger('flair/pos-english-fast')
 
         # Initialize Knowledge Source & Topic Transition Model using the Sentence Embedding Model of choice
-        self.knowledge_db = KnowledgeSource(model=self.sentence_model.model, num_results=1, persist=True,
+        self.knowledge_db = KnowledgeSource(model=self.sentence_model.model, num_results=3, persist=True,
                                             persist_path='../../../res/knowledge_presets', use_hot_cache=True)
 
         # Responsible for tracking changes in the topic the conversation is centered around
@@ -366,10 +366,10 @@ class MUKALMA:
             knowledge_sent, knowledge_start_index, knowledge_end_index = \
                 self.cloze_model.get_answers(message, cur_turn_knowledge)
             print(f"[{self.TAG}]: [CLOZE-Based]: Knowledge span extracted: "
-                  f"{knowledge_sent if len(knowledge_sent) != 0 else 'Not found'}")
+                  f"{knowledge_sent if knowledge_sent != '' else 'Not found'}")
 
         # If a knowledge_sent couldn't be found, find the most similar sentence instead
-        if len(knowledge_sent) == 0:
+        if knowledge_sent == "":
             print(f"\n\n{'=' * 20}: KNOWLEDGE SPAN COULDN'T BE EXTRACTED. Use fallback: Find most similar sentence")
             print(f"[{self.TAG}]: find_relevant_response: SENT TOK KNOWLEDGE: {cur_turn_knowledge_tok}")
             print(f"[{self.TAG}]: find_relevant_response: message:\n{message}")
