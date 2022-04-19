@@ -10,12 +10,12 @@
 """
 
 # Importing Models
-from ...util_models.DialoGPTController import DialoGPTController
+from ..util_models.DialoGPTController import DialoGPTController
 from src.util_models.T5.T5ClozeController import T5ClozeController, getMaskToken
-from ...util_models.SentenceModel import SentenceModel
-from ...util_models.T5.T5ForQuestionGeneration import T5ForQuestionGeneration
-from ...util_models.FlairPOSTagger import FlairPOSTagger
-from ...util_models.TopicTransitionModel import TopicTransitionModel
+from ..util_models.SentenceModel import SentenceModel
+from ..util_models.T5.T5ForQuestionGeneration import T5ForQuestionGeneration
+from ..util_models.FlairPOSTagger import FlairPOSTagger
+from ..util_models.TopicTransitionModel import TopicTransitionModel
 
 # Importing NLU Components
 from .nlu.partsOfSpeech import get_nouns, match_questions, fix_sentence
@@ -213,7 +213,7 @@ class MUKALMA:
 
         # Initialize Knowledge Source & Topic Transition Model using the Sentence Embedding Model of choice
         self.knowledge_db = KnowledgeSource(model=self.sentence_model.model, num_results=3, persist=True,
-                                            persist_path='../../../res/knowledge_presets', use_hot_cache=True)
+                                            persist_path='../../res/knowledge_presets', use_hot_cache=True)
 
         # Responsible for tracking changes in the topic the conversation is centered around
         self.topic_transition_model = TopicTransitionModel(self.fast_sentence_model.model,

@@ -136,4 +136,4 @@ dmypy.json
 */.ipynb_checkpoints/*
 
 # React JS 
-src/front_end/chat/node_modules/
+src/front_end/node_modules/

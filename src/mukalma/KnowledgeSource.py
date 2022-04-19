@@ -170,7 +170,7 @@ class KnowledgeSource:
 
         self.num_results = num_results
 
-        self.sentence_model = SentenceTransformer('../../../models/all-MiniLM-L6-v2', device='cuda') if model is None \
+        self.sentence_model = SentenceTransformer('../../models/all-MiniLM-L6-v2', device='cuda') if model is None \
             else model
 
         # Whether the knowledge source object should be persisted at the end of execution
