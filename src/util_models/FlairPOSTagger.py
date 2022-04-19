@@ -36,3 +36,20 @@ class FlairPOSTagger:
         for idx, entity in enumerate(sentence.get_spans('pos')):
             tags.append((toks[idx].text, entity.get_labels()[0].value))
         return tags
+
+    def get_tags(self, message):
+        sentence = Sentence(message)
+        self.model.predict(message)
+        toks = sentence.tokens
+
+        # POS
+        pos_tags = []
+        for idx, entity in enumerate(sentence.get_spans('pos')):
+            pos_tags.append((toks[idx].text, entity.get_labels()[0].value))
+
+        # NER
+        ner_tags = []
+        for idx, entity in enumerate(sentence.get_spans('ner')):
+            pos_tags.append((toks[idx].text, entity.get_labels()[0].value))
+
+        return pos_tags, ner_tags

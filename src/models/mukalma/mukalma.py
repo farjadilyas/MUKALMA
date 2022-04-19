@@ -236,11 +236,29 @@ class MUKALMA:
     def set_knowledge_source(self, knowledge_source):
         pass
 
+    def __not_ner(self, pos, ner_list):
+        for ner in ner_list:
+            toks = ner.split(' ')
+            if pos in toks:
+                return False
+        return True
+
     def __extract_topic(self, message):
-        pos_list = self.tagger.get_pos_tags(message)
-        pos_words = []
+        pos_list, ner_list = self.tagger.get_pos_tags(message)
+        words = []
+
+        # Adding NER List
+        words.extend(ner_list)
+
         prev_type = None
+        
+        # Extending to POS keywords
         for pos in pos_list:
+
+            # If POS in NER list we continue
+            if not self.__not_ner(pos, ner_list):
+                continue
+
             # If the current part of speech isn't a Noun, reset the previous type and skip this
             if pos[1][:2] not in ['NN', 'CD']:
                 prev_type = None
@@ -250,11 +268,11 @@ class MUKALMA:
             # If the previous pos had the same type, it might be a compound word, append it
             # If not, just append it to the list of relevant pos words
             if pos[1] == prev_type:
-                pos_words[-1] = f"{pos_words[-1]} {pos[0]}"
+                words[-1] = f"{words[-1]} {pos[0]}"
             else:
-                pos_words.append(pos[0])
+                words.append(pos[0])
 
-        return pos_words
+        return words
 
     def get_best_response_id(self, responses, log_responses=False, prefix=""):
         max_length = -1
