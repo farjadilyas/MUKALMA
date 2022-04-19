@@ -96,8 +96,8 @@ class TopicTransitionModel:
     def update_topic(self, message, c_keywords):
         
         # Comparing the current message to the previous keywords
+        self.prev_keywords = list(set(self.prev_keywords).difference(c_keywords))
         if len(self.prev_keywords) > 0:
-            self.prev_keywords = list(set(self.prev_keywords).difference(c_keywords)) 
             s_scores = self.calc_sentence_similarity(message, self.prev_keywords)
 
             if len(self.prev_keywords) >= 3:
