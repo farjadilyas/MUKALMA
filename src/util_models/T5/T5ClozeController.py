@@ -139,7 +139,9 @@ class T5ClozeController:
         for output in outputs:
             decoded_output = self.tokenizer.decode(output, skip_special_tokens=True)
             print(f"[{self.TAG}]: [get_answers: QA]: {decoded_output}")
-            decoded_outputs.append(decoded_output)
+            # Don't consider answers which copy from the input message
+            if decoded_output not in message:
+                decoded_outputs.append(decoded_output)
 
         # TODO: Implement better entailment checking
         """
@@ -157,4 +159,4 @@ class T5ClozeController:
         
         # if eq_checks[0] == 'entailment' else ""
         """
-        return decoded_outputs[0], -1, -1
+        return decoded_outputs[0] if len(decoded_outputs) > 0 else "", -1, -1
