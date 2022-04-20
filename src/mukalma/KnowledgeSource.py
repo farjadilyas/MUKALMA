@@ -146,9 +146,11 @@ def calculate_tfidf_similarity(base_document, documents):
     print(f"DOCUMENT COSINE SIM: {cosine_similarities}")
     return cosine_similarities
 
+# End of function
 
 class KnowledgeSource:
-    def __init__(self, model=None, num_results=3, persist=True, persist_path='', use_hot_cache=True):
+    def __init__(self, model=None, num_results=3, persist=True, persist_path='', use_hot_cache=True, offline=False):
+        
         self.use_multi_source = num_results > 1
         if self.use_multi_source:
             self.ks_filename = MULTI_KS_FILENAME
@@ -177,6 +179,9 @@ class KnowledgeSource:
         self.persist = persist
         self.persist_location = persist_location if persist else None
 
+        # Flag for detecting offline or not
+        self.offline = offline
+
     def build_db(self, topics):
         """
           Given a list of topics, each consisting of a list of keywords corresponding to the topic, build a database of
@@ -200,19 +205,51 @@ class KnowledgeSource:
                     self.__fetch_single_source_article_data(article)
 
     def fetch_relevant_articles(self, topics):
+        """
+            Fetches the top {self.num_results} topics from either the wikipedia or 
+            local database depending on the mode. Topics is a list of keywords to search from
+        """
         if len(topics) == 0:
             return []
 
-        topic_search_str = ' '.join(topics)
+        articles = []
+        
+        # If we are not offline we search the keywords in Wikipedia
+        if not self.offline:
+            topic_search_str = ' '.join(topics)
 
-        print(f"Fetching data for '{topic_search_str}'")
-        try:
-            articles = wikipedia.search(topic_search_str, results=self.num_results)
-        except:
-            articles = []
+            print(f"Fetching data for '{topic_search_str}'")
+            try:
+                articles = wikipedia.search(topic_search_str, results=self.num_results)
+            except:
+                articles = []
+            
+        else:
+            # Searching from the local database
+            stored_articles = list(self.article_db.keys())
+            topic_search_str = ' '.join(topics)
+            all_articles = []
+            
+            for article in stored_articles:
+                all_articles.append(self.article_db[article][0])
+                
+            # Computing document similarity using tfidf
+            doc_c_sim = calculate_tfidf_similarity(topic_search_str, all_articles)    
+            selected_article_ids = doc_c_sim.argsort()
+            
+            # Adding the top k elements into the article list
+            added = 0
+            for _id in np.flip(selected_article_ids):
+                articles.append(stored_articles[_id])
+                added += 1
+                if added == self.num_results:
+                    break
+            # End for
+        # End else
+
         print(f"Using the following relevant articles: {articles}")
-
         return articles
+    # End of function
 
     def fetch_topic_data(self, topics, message):
         selected_para_tok, selected_article_title = self.__fetch_multi_source_topic_data(topics, message) \
