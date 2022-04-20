@@ -62,7 +62,8 @@ class APIModel:
                 "t5-e2e": False,
                 "miniLM": True,
                 "mpnet": True
-            }
+            },
+            "dialog_exclusion_list": "../../res/dialog_word_exclusion_list.txt"
         }
         self.model = MUKALMA(self.params, progress_update_queue)
         
