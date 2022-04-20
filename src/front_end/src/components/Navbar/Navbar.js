@@ -6,10 +6,13 @@ import useStyles from './styles'
 import { motion } from 'framer-motion'
 import { values } from '../../constants'
 
+import { updateApiUrl } from "../../api";
+
 const Navbar = () => {
 
     // Using a variable for displaying the URL input field
     const [showInputField, setShowInputField] = useState(false);
+    const [url, setUrl] = useState('');
 
     // Using JS-style CSS for this component
     const classes = useStyles();
@@ -17,6 +20,16 @@ const Navbar = () => {
     // Function to toggle inputField
     const toggleURLInputField = () => {
         setShowInputField(!showInputField);
+    }
+
+    // Function to update API url
+    const handleSubmit = (event) => {
+        if (event) {
+            event.preventDefault();
+        }
+        updateApiUrl(url);
+        setShowInputField(false);
+        setUrl('')
     }
 
     // Building HTML
@@ -34,9 +47,14 @@ const Navbar = () => {
                         <Link />
                     </IconButton>
                     { showInputField ?
-                        <motion.div animate={{ x: [-30, 0], opacity: [0, 1] }}>
-                            <TextField label="URL"/>
-                        </motion.div>
+                        <form onSubmit={handleSubmit}>
+                            <TextField 
+                                label="URL" 
+                                value={url} 
+                                onChange={(event) => setUrl(event.target.value)}
+                                fullWidth={true}
+                            />
+                        </form>
                         :
                         <></>
                     }
