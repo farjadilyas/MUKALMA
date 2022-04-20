@@ -193,6 +193,7 @@ class MUKALMA:
         self.flavor_config = params["flavors"][self.flavor_selected]
         self.model_flavors = params["flavors"]
         self.cuda_use = params["use_cuda"]
+        self.offline = params["offline"]
 
         # ------------------------------------------------------------------------------------------------------------
         # Loading Models
@@ -216,7 +217,7 @@ class MUKALMA:
 
         # Initialize Knowledge Source & Topic Transition Model using the Sentence Embedding Model of choice
         self.knowledge_db = KnowledgeSource(model=self.sentence_model.model, num_results=3, persist=True,
-                                            persist_path='../../res/knowledge_presets', use_hot_cache=True)
+                                            persist_path='../../res/knowledge_presets', use_hot_cache=True, offline=self.offline)
 
         # Responsible for tracking changes in the topic the conversation is centered around
         self.topic_transition_model = TopicTransitionModel(self.fast_sentence_model.model,
