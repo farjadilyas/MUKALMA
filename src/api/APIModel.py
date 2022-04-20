@@ -9,12 +9,13 @@
 
 # Imports
 from ..mukalma.mukalma import MUKALMA
-from threading import Thread
+from concurrent.futures import ThreadPoolExecutor
 
 
 # Class Definition
 class APIModel:
     def __init__(self, progress_update_queue):
+        self.executor = ThreadPoolExecutor(1)
         self.params = {
             "flavors": {
                 "small": {
@@ -66,10 +67,7 @@ class APIModel:
         self.model = MUKALMA(self.params, progress_update_queue)
         
     def reply(self, message):
-        # Spawn a thread to asynchronously generate a response for the message received
-        t = Thread(target=self.model.get_response, args=(message, ))
-        t.daemon = True
-        t.start()
+        self.executor.submit(self.model.get_response, message)
         return {}
 
     def exit(self):
