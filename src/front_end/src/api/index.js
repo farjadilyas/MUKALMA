@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export var API = axios.create({ baseURL: "http://3fb7-35-238-228-239.ngrok.io" });
+export var API = axios.create({ baseURL: "http://127.0.0.1:5000" });
 export const updateApiUrl = (url) => {
     API = axios.create({ baseURL: url });
 }

@@ -27,7 +27,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Queue and variables used for progress updates
-progress_queue = Queue(maxsize=4)
+progress_queue = Queue()
 __PROGRESS_UPDATE_TIMEOUT = 40  # Timeout in seconds
 
 # Creating Models to be used by the API
@@ -49,6 +49,7 @@ atexit.register(cleanup)
 
 @app.route('/reply', methods=['POST'])
 def get_reply():
+    progress_queue.empty()
     _json = request.json
     _message = _json['message']
     reply = test_model.reply(_message)
@@ -87,3 +88,10 @@ def clear_context():
         status = 404
     finally:
         return jsonify({"status": "Error"}), status
+
+@app.route('/set_parent_topic', methods=['POST'])
+def set_parent_topic():
+    _json = request.json
+    topic = _json['topic']
+    test_model.set_topic(topic)
+    return jsonify({"status": "Success"}), 200

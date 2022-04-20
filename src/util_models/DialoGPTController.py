@@ -82,7 +82,7 @@ class DialoGPTController:
             self.model = self.model.to(self.device)
             self.model.resize_token_embeddings(len(self.tokenizer))
 
-    def predict(self, user_input, output_fragment="", new_dialog_session=False):
+    def predict(self, user_input, output_fragment="", new_dialog_session=False, complete_response=True):
         """
         Custom implementation of DialoGPT's predict functionality. Given an input message (and optionally, a partial
         response, this method uses DialoGPT for sequence generation)
@@ -100,8 +100,9 @@ class DialoGPTController:
         self.initialize_model()
 
         # encode the new user input, add the eos_token and return a tensor in Pytorch
-        new_user_input_ids = self.tokenizer.encode(
-            user_input + self.tokenizer.eos_token + output_fragment, return_tensors='pt')
+        new_user_input_ids = self.tokenizer.encode(user_input + self.tokenizer.eos_token + output_fragment
+                                                   + ("" if complete_response else self.tokenizer.eos_token),
+                                                   return_tensors='pt')
 
         # append the new user input tokens to the chat history
         bot_input_ids = torch.cat([self.chat_history_ids,
@@ -132,12 +133,13 @@ class DialoGPTController:
                                                    max_length=1000,
                                                    pad_token_id=self.tokenizer.eos_token_id,
                                                    temperature=0.9,
-                                                   num_beams=20,
+                                                   num_beams=4,
                                                    repetition_penalty=1.3,
                                                    num_return_sequences=2, use_cache=True,
                                                    no_repeat_ngram_size=8)
         else:
             chat_history_ids = self.model.generate(bot_input_ids, pad_token_id=self.tokenizer.eos_token_id,
+                                                   max_length=1000,
                                                    top_k=50, top_p=0.95, do_sample=True,
                                                    num_return_sequences=2, use_cache=True,
                                                    no_repeat_ngram_size=8)
