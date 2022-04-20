@@ -145,9 +145,11 @@ class TopicTransitionModel:
     # End of function
 
     def clear_topic_keywords(self):
+        self.sent_changed_topic = self.prev_msg = TopicTransitionModel.__control_msg
         self.prev_keywords = []
         self.pass_through = []
         self.c_keywords = []
+        self.false_topic_change = 0
 
     # End of function
     

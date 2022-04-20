@@ -77,3 +77,6 @@ class APIModel:
 
     def clear_context(self):
         self.model.clear_context()
+
+    def set_topic(self, topic):
+        self.model.set_topic([topic])

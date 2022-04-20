@@ -407,6 +407,8 @@ class KnowledgeSource:
 
 
 if __name__ == '__main__':
+    ks = read_object('../../res/knowledge_presets/multi_knowledge_source.pkl')
+    print(ks.keys())
     uin = input(f"{'=' * 100}\nKnowledgeSource save file merger\n{'=' * 100}\n\nContinue (y/n)?")
     if uin.strip().lower() == 'n':
         print("Quitting...")

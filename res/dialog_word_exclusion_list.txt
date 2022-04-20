@@ -3,3 +3,5 @@ com
 jpeg
 jpg
 pdf
+gif
+txt
