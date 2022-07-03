@@ -73,11 +73,17 @@ https://drive.google.com/drive/folders/1yYCOeMwm-8d9Q6KlM3vTx3vzjCNTeAF7?usp=sha
 These are some of the metrics that nlg-eval produces results for : 
 
 BLEU-1
+
 METEOR
+
 ROUGE-L
+
 Skip Thoughts Cosine Similarity
+
 Embedding Average Cosine Similarity
+
 Vector Extrema Cosine Similarity
+
 Greedy Matching Score
 
 
