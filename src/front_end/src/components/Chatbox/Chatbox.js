@@ -33,7 +33,8 @@ const Chatbox = ({
     setSpanSelected, 
     setResponses, 
     setSpeechText, 
-    setTopics
+    setTopics,
+    asyncApi
 }) => {
     
     // Dispatcher
@@ -41,6 +42,7 @@ const Chatbox = ({
 
     // State
     const [message, setMessage] = useState('');
+    const [messageId, setMessageId] = useState(0);
     
     // Resizing the window to fit the screen
     const [width, setWidth] = useState(window.innerWidth)
@@ -97,25 +99,45 @@ const Chatbox = ({
         // Dispatching Network calls
         // For Message
         dispatch(sendMessage(
-            {"message": message}
-        ))
+            {
+                "message": message, 
+                "async": asyncApi,
+                "m_id": messageId
+            },
+            asyncApi,
+            setMessages,
+            setSource, 
+            setSpanSelected, 
+            setResponses, 
+            setSpeechText,
+            messages,
+            setShowProgress,
+            setPaddingBottom,
+            setResponseProgressMessage,
+            setActiveStep,
+            setTopics,
+            messageId,
+            setMessageId
+        ));
 
         // For Progress
-        setTimeout(() => {
-            dispatch(waitForResponse( 
-                setMessages,
-                setSource, 
-                setSpanSelected, 
-                setResponses, 
-                setSpeechText,
-                messages,
-                setShowProgress,
-                setPaddingBottom,
-                setResponseProgressMessage,
-                setActiveStep,
-                setTopics
-            ));
-        }, 500)
+        if (asyncApi) {
+            setTimeout(() => {
+                dispatch(waitForResponse( 
+                    setMessages,
+                    setSource, 
+                    setSpanSelected, 
+                    setResponses, 
+                    setSpeechText,
+                    messages,
+                    setShowProgress,
+                    setPaddingBottom,
+                    setResponseProgressMessage,
+                    setActiveStep,
+                    setTopics
+                ));
+            }, 500)
+        }
     }
 
     // Submit Function

@@ -11,8 +11,12 @@ import './App.css'
 
 // Main App Code
 const App = () => {
+
     // Loading state variable
     const [isLoading, setIsLoading] = useState(true);
+
+    // Reply
+    const [asyncApi, setAsyncApi] = useState(true);
 
     // Waiting for animation timeout seconds before routing to main
     useEffect(() => {
@@ -25,15 +29,11 @@ const App = () => {
     // Main Website Return
     return isLoading ? <SplashScreen /> :
     (
-        <BrowserRouter>
-            <Container className="mainContainer" maxWidth={false}>
-                <Navbar />
-                <Switch>
-                    <Route path="/" exact component={Home}/>
-                </Switch>
-            </Container>
-        </BrowserRouter>
-    )
+        <Container className="mainContainer" maxWidth={false}>
+            <Navbar asyncApi={asyncApi} setAsyncApi={setAsyncApi} />
+            <Home asyncApi={asyncApi} />
+        </Container>
+    );
 }
 
 export default App;
