@@ -43,6 +43,7 @@ The following table depicts the presets available for MUKALMA, and their accompa
 
 ### Running the MUKALMA model
 
+#### Run MUKALMA locally
 Note: Ensure you have selected your desired preset for MUKALMA's model size
 
 ```sh
@@ -51,6 +52,10 @@ set FLASK_APP=app.py
 flask run
 ```
 
+#### Run MUKALMA on Google Colaboratory
+MUKALMA is present on a Google Drive account with the environment set up. Contact our team to request access to MUKALMA on Colab (See the Contact Us section at the bottom).  
+If accepted, you will gain access to the MUKALMA_api notebook, which you can run to execute the MUKALMA model and expose it via ngrok tunnelling.
+
 ### Running the sample frontend
 
 ```sh
@@ -58,33 +63,26 @@ cd src/front_end
 npm install
 npm start
 ```
+On the top bar of the front-end, the link icon can be clicked to provide a link for the URL at which the API is being hosted.
+
+
 
 ### Evaluating Output
 
-To evaluate Mukalma's output , we have used a free tool named nlg-eval made available by Maluuba Inc. , an Artificial Intelligence Company that has been acquired by Microsoft. To acquire and setup nlg-eval , please use the following link : 
- 
- https://github.com/Maluuba/nlg-eval
+To evaluate Mukalma's output, we have used a free tool named nlg-eval made available by Maluuba Inc., an Artificial Intelligence Company that has been acquired by Microsoft. To acquire and setup nlg-eval, please follow the guide on its [repository](https://github.com/Maluuba/nlg-eval)
  
 
-nlg-eval runs comparisons between actual and expected output of NLG on several unsupervised , automated metrics. The Gold standard we have used to compare our output to is the Wizards of Wikipedia Dialogue Dataset , which can be found at this link : 
-
-https://drive.google.com/drive/folders/1yYCOeMwm-8d9Q6KlM3vTx3vzjCNTeAF7?usp=sharing
+Nlg-eval runs comparisons between actual and expected output of NLG on several unsupervised, automated metrics. The Gold standard we have used to compare our output to is the Wizards of Wikipedia Dialogue Dataset, which can be found [here](https://drive.google.com/drive/folders/1yYCOeMwm-8d9Q6KlM3vTx3vzjCNTeAF7?usp=sharing)
 
 These are some of the metrics that nlg-eval produces results for : 
 
-BLEU-1
-
-METEOR
-
-ROUGE-L
-
-Skip Thoughts Cosine Similarity
-
-Embedding Average Cosine Similarity
-
-Vector Extrema Cosine Similarity
-
-Greedy Matching Score
+- BLEU-1
+- METEOR
+- ROUGE-L
+- Skip Thoughts Cosine Similarity
+- Embedding Average Cosine Similarity
+- Vector Extrema Cosine Similarity
+- Greedy Matching Score
 
 
 ## License
