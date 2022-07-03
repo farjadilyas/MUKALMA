@@ -180,6 +180,12 @@ class MUKALMA:
         "Sorry, I don't know about that"
     ]
 
+    # Progress update ids
+    INFO_RET_UPDATE = 0
+    KNOWLEDGE_EXTRACTION_UPDATE = 1
+    CLOZE_UPDATE = 2
+    FINAL_UPDATE = 3
+
     def __init__(self, params, progress_update_queue):
         self.TAG = 'MUKALMA'
         self.progress_update_queue = progress_update_queue
@@ -307,7 +313,7 @@ class MUKALMA:
                       f"knowledge span\n\n")
                 return "", []
             self.progress_update_queue.put_nowait(
-                {"id": 2, "message": "Knowledge source could not be found", "success": False}
+                {"id": MUKALMA.CLOZE_UPDATE, "message": "Knowledge source could not be found", "success": False}
             )
             return responses[self.get_best_response_id(responses)], responses
 
@@ -323,7 +329,7 @@ class MUKALMA:
             f"{message} {getMaskToken(0)} {knowledge_sent}{right_mask} ."
         )
 
-        self.progress_update_queue.put_nowait({"id": 2, "message": "Cloze completion complete", "success": True})
+        self.progress_update_queue.put_nowait({"id": MUKALMA.CLOZE_UPDATE, "message": "Cloze completion complete", "success": True})
 
         fragmented_outputs = []
         outputs = []
@@ -493,7 +499,7 @@ class MUKALMA:
         ks_found = len(cur_turn_knowledge_tok) != 0
         self.progress_update_queue.put_nowait(
             {
-                "id": 0,
+                "id": MUKALMA.INFO_RET_UPDATE,
                 "message": f"Knowledge fetched from article {knowledge_article}"
                 if ks_found
                 else "Knowledge source not found",
@@ -509,7 +515,7 @@ class MUKALMA:
 
         self.progress_update_queue.put_nowait(
             {
-                "id": 1, "message": "Knowledge span extracted" if ks_found else "Knowledge source not found",
+                "id": MUKALMA.KNOWLEDGE_EXTRACTION_UPDATE, "message": "Knowledge span extracted" if ks_found else "Knowledge source not found",
                 "success": ks_found
             }
         )
@@ -543,7 +549,7 @@ class MUKALMA:
             "knowledge_source": cur_turn_knowledge,
             "k_start_index": knowledge_start_index,
             "k_end_index": knowledge_end_index,
-            "id": 3,
+            "id": MUKALMA.FINAL_UPDATE,
             "message": "Response generated",
             "success": True,
             "topic": {
