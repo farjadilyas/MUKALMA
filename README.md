@@ -59,6 +59,28 @@ npm install
 npm start
 ```
 
+### Evaluating Output
+
+To evaluate Mukalma's output , we have used a free tool named nlg-eval made available by Maluuba Inc. , an Artificial Intelligence Company that has been acquired by Microsoft. To acquire and setup nlg-eval , please use the following link : 
+ 
+ https://github.com/Maluuba/nlg-eval
+ 
+
+nlg-eval runs comparisons between actual and expected output of NLG on several unsupervised , automated metrics. The Gold standard we have used to compare our output to is the Wizards of Wikipedia Dialogue Dataset , which can be found at this link : 
+
+https://drive.google.com/drive/folders/1yYCOeMwm-8d9Q6KlM3vTx3vzjCNTeAF7?usp=sharing
+
+These are some of the metrics that nlg-eval produces results for : 
+
+BLEU-1
+METEOR
+ROUGE-L
+Skip Thoughts Cosine Similarity
+Embedding Average Cosine Similarity
+Vector Extrema Cosine Similarity
+Greedy Matching Score
+
+
 ## License
 
 GNU General Public License v3.0
