@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { AppBar, Typography, IconButton, TextField } from "@material-ui/core";
+import { useDispatch } from 'react-redux';
+
+import { AppBar, Typography, IconButton, TextField, Button } from "@material-ui/core";
 import { Link } from '@material-ui/icons'
 
 import useStyles from './styles'
@@ -7,19 +9,28 @@ import { motion } from 'framer-motion'
 import { values } from '../../constants'
 
 import { updateApiUrl } from "../../api";
+import { connectToApi } from '../../actions/message';
 
-const Navbar = () => {
+const Navbar = ({ asyncApi, setAsyncApi }) => {
 
     // Using a variable for displaying the URL input field
     const [showInputField, setShowInputField] = useState(false);
     const [url, setUrl] = useState('');
+    const [connectionStatus, setConnectionStatus] = useState(false);
 
     // Using JS-style CSS for this component
     const classes = useStyles();
 
+    // Dispatcher
+    const dispatch = useDispatch();
+
     // Function to toggle inputField
     const toggleURLInputField = () => {
         setShowInputField(!showInputField);
+    }
+
+    const toggleAsyncApi = () => {
+        setAsyncApi(!asyncApi);
     }
 
     // Function to update API url
@@ -29,7 +40,10 @@ const Navbar = () => {
         }
         updateApiUrl(url);
         setShowInputField(false);
-        setUrl('')
+        setUrl('');
+        dispatch(
+            connectToApi(setConnectionStatus)
+        );
     }
 
     // Building HTML
@@ -58,6 +72,16 @@ const Navbar = () => {
                         :
                         <></>
                     }
+                    {
+                        connectionStatus ? 
+                        <Typography variant="body2" color="primary">
+                            CONNECTED
+                        </Typography> 
+                        : <></>
+                    }
+                    <Button onClick={toggleAsyncApi} color={ asyncApi ? "primary" : "secondary" }>
+                        { asyncApi ? "ASYNC" : "SYNC" }
+                    </Button>
                 </motion.div>
             </div>
             <div className={classes.grow}/>

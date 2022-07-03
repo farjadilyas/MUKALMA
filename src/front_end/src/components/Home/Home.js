@@ -12,7 +12,7 @@ import './Home.css';
 
 import { values } from '../../constants'
 
-const Home = () => {
+const Home = ({ asyncApi }) => {
 
     // Messages
     const [messages, setMessages] = useState(initialState)
@@ -24,10 +24,7 @@ const Home = () => {
     const [value, setValue] = React.useState(-1);
 
     // Topic
-    const [topics, setTopics] = useState([{ 
-        "knowledge_article": "Multan", 
-        "keywords": ["multan", "city", "pakistan"] 
-    }]);
+    const [topics, setTopics] = useState([]);
     const [spanSelected, setSpanSelected] = useState(/Fusce placerat consequat elementum./g)
     const [selectedTopic, setSelectedTopic] = useState('Multan')
 
@@ -60,6 +57,7 @@ const Home = () => {
                         setResponses={setResponses}
                         setSpeechText={setSpeechText}
                         setTopics={setTopics}
+                        asyncApi={asyncApi}
                     />
                 </Grid>
                 <Grid item xs={12} sm={ value < 0 ? 1 : 6 } className={"gridItem"} >

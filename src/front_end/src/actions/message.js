@@ -3,19 +3,122 @@ import { agent, initialState } from '../components/Chatbox/state'
 import { scrollToHighlight } from '../components/Source/scroll'
 import { scrollToBottom } from '../components/Chatbox/Chatbox'
 
-export const sendMessage = (message) => async () => {
+export const sendMessage = (
+    message,
+    isAsync,
+    setMessages, 
+    setSource,
+    setSpanSelected, 
+    setResponses, 
+    setSpeechText,
+    messages, 
+    setShowProgress,
+    setPaddingBottom,
+    setResponseProgressMessage,
+    setActiveStep,
+    setTopics,
+    messageId,
+    setMessageId
+    ) => async () => {
+
     try {
-        const data = await api.sendMessage(message)
+        const messageUpdates = ["Knowledge Fetched from article", "Knowledge Span Extracted", "Cloze Completion completed!"];
+
+        // Setting Ticker Timers
+        for (let i = 1; i <= 3; i++) {
+            setTimeout(() => {
+                setActiveStep(i);
+                setResponseProgressMessage(messageUpdates[i]);
+            }, i * 1000);
+        }
+
+        // First call for message reply
+        let data = await api.sendMessage(message)
+
+        // Setting State after Sync call
+        if (!isAsync) {        
+            // Setting final progress element
+            setActiveStep(4);
+            setResponseProgressMessage(data.data.message);
+
+            // Checking for message Ids
+            let m_id = data.data.m_id;
+            while (m_id !== messageId) {
+                data = await api.sendMessage(message);
+                m_id = data.data.m_id;
+            }
+
+            setMessageId(messageId + 1);
+
+            // Getting Conversation Response
+            var result = data.data.response;
+            var responseList = result.split(".");
+
+            // Pausing for a second before updating everything
+            setTimeout(() => {
+
+                // Setting the source
+                var source = data.data.knowledge_source;
+                setSource(source);
+
+                // Adding Multiple messages based on the full stops
+                // Each sentence is uttered as a separate text message
+                var i
+                for (i = 0; i < responseList.length - 1; ++i) 
+                {
+                    if (responseList[i].length > 0) {
+                        setMessages(messages => [...messages, {
+                            "text": responseList[i],
+                            "id": "0",
+                            "sender": agent
+                        }]);
+                    }
+                }
+
+                // Setting Topics and keywords
+                setTopics(topics => [...topics, {
+                    "knowledge_article": data.data.topic.knowledge_article,
+                    "keywords": data.data.topic.keywords
+                }])
+
+                // Setting Span of text by Q/A
+                var span = data.data.knowledge_sent
+                setSpanSelected(span)
+
+                // Setting Candidate Responses
+                var responses = data.data.candidates
+                setResponses(responses)
+
+                // Updating UI
+                setPaddingBottom(0);
+                setShowProgress(false);
+                setActiveStep(0)
+                setResponseProgressMessage('Fetching knowledge source ...')
+                // scrollToHighlight(messages.length);
+
+                // Setting Audio
+                setSpeechText(result);
+            }, 1000);
+        }
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 }
 
 export const clearContext = () => async () => {
     try {
-        const data = await api.clearContext()
+        const data = await api.clearContext();
     } catch (error) {
-        console.log(error)
+        console.log(error);
+    }
+}
+
+export const connectToApi = (setConnectionStatus) => async () => {
+    try {
+        const data = await api.connect();
+        data ? setConnectionStatus(true) : setConnectionStatus(false);
+    } catch (error) {
+        console.log(error);
     }
 }
 
@@ -75,16 +178,16 @@ export const waitForResponse = (
         }
         
         // Retrieving Data for Final Response
-        setActiveStep(3)
-        var data = await api.waitForResponse()
+        setActiveStep(3);
+        var data = await api.waitForResponse();
 
         // Setting final progress element
-        setActiveStep(4)
-        setResponseProgressMessage(data.data.message)
+        setActiveStep(4);
+        setResponseProgressMessage(data.data.message);
 
         // Getting Conversation Response
-        var result = data.data.response
-        var responseList = result.split(".")
+        var result = data.data.response;
+        var responseList = result.split(".");
 
         // Pausing for a second before updating everything
         setTimeout(() => {
